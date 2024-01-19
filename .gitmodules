@@ -1,0 +1,3 @@
+[submodule "ciellab"]
+	path = third_party/ciellab
+	url = https://github.com/namespaceciel/ciellab.git
