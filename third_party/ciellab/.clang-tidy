@@ -1,5 +1,0 @@
-Checks: '-*,
-llvm-include-order,
-llvm-namespace-comment,
-misc-const-correctness,
-'
