@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(CTZ
         src/config.cpp
         src/task.cpp
+        src/thread.cpp
 )
 
 target_include_directories(CTZ PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -25,6 +26,7 @@ if (CTZ_BUILD_TESTS)
 
     add_executable(CTZ_TEST
             test/task_test.cpp
+            test/thread_test.cpp
     )
 
     add_subdirectory(third_party/googletest)

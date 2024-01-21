@@ -7,7 +7,8 @@
 
 NAMESPACE_CTZ_BEGIN
 
-// 每个 Task 存储着一个任务（以 std::function<void()> 表示，需要的外部变量统一用值捕获存到里面），以供 scheduler 调度
+// 每个 Task 存储着一个任务（以 std::function<void()> 表示，需要的外部变量统一用值捕获存到里面），以供 scheduler 调度。
+// 如果没有 Flags 那它跟 std::function<void()> 无异。
 class Task {
 public:
     using Function = std::function<void()>;
@@ -15,7 +16,7 @@ public:
     enum class Flags {
         None = 0,
 
-        // 当将 flags_ 设置为 SameThread 时，调度器保证此任务不会交给其它线程。
+        // 当将 flags 设置为 SameThread 时，调度器保证此任务不会交给其它线程。
         // TODO: 没看懂有什么用
         SameThread = 1,
 
@@ -39,17 +40,17 @@ public:
 
     Task& operator=(Function&&) noexcept;
 
-    // 检查 f_ 是否处于合法状态
+    // 检查 func 是否处于合法状态
     explicit operator bool() const noexcept;
 
-    // 执行 f_
+    // 执行 func
     void operator()() const;
 
     bool is(Flags) const noexcept;
 
 private:
-    Function f_;
-    Flags flag_;
+    Function func;
+    Flags flag;
 
 };  // class Task
 

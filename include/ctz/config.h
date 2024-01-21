@@ -1,7 +1,7 @@
 #ifndef CTZ_CONFIG_H
 #define CTZ_CONFIG_H
 
-// 在 debug 模式下可以用 CTZ_ASSERT(condition, "message"); 进行运行时检查
+// 在 debug 模式下可以用 CTZ_ASSERT(condition, "message"); 进行运行时检查。
 
 // debug level
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
