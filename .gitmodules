@@ -1,3 +1,6 @@
 [submodule "third_party/ciellab"]
 	path = third_party/ciellab
 	url = https://github.com/namespaceciel/ciellab.git
+[submodule "third_party/googletest"]
+	path = third_party/googletest
+	url = https://github.com/google/googletest.git
