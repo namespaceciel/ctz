@@ -4,6 +4,7 @@
 #include <thread>
 #include <unistd.h>
 #include <unordered_set>
+#include <vector>
 
 namespace std {
 
@@ -188,7 +189,89 @@ std::shared_ptr<Policy> Policy::oneOf(Affinity&& affinity) {
 
 #if defined(_WIN32)
 
-#error ThreadImpl for Windows has not implemented yet.
+class Thread::Impl {
+public:
+    Impl(Function&& f, _PROC_THREAD_ATTRIBUTE_LIST* attributes)
+        : func(std::move(f)),
+          handle(CreateRemoteThreadEx(GetCurrentProcess(),
+                                      nullptr,
+                                      0,
+                                      &Impl::run,
+                                      this,
+                                      0,
+                                      attributes,
+                                      nullptr)) {}
+
+    ~Impl() { CloseHandle(handle); }
+
+    Impl(const Impl&) = delete;
+    Impl(Impl&&) = delete;
+    Impl& operator=(const Impl&) = delete;
+    Impl& operator=(Impl&&) = delete;
+
+    void Join() const { WaitForSingleObject(handle, INFINITE); }
+
+    static DWORD WINAPI run(void* self) {
+        reinterpret_cast<Impl*>(self)->func();
+        return 0;
+    }
+
+private:
+    const Function func;
+    const HANDLE handle;
+};
+
+Thread::Thread(Affinity&& affinity, Func&& func) {
+    SIZE_T size = 0;
+    InitializeProcThreadAttributeList(nullptr, 1, 0, &size);
+    CTZ_ASSERT(size > 0, "InitializeProcThreadAttributeList() did not give a size");
+
+    std::vector<uint8_t> buffer(size);
+    LPPROC_THREAD_ATTRIBUTE_LIST attributes = reinterpret_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(buffer.data());
+    CHECK_WIN32(InitializeProcThreadAttributeList(attributes, 1, 0, &size));
+    CIEL_DEFER(DeleteProcThreadAttributeList(attributes));
+
+    GROUP_AFFINITY groupAffinity = {};
+
+    auto count = affinity.count();
+    if (count > 0) {
+        groupAffinity.Group = affinity[0].windows.group;
+
+        for (size_t i = 0; i < count; i++) {
+            auto core = affinity[i];
+            CTZ_ASSERT(groupAffinity.Group == core.windows.group, "Cannot create thread that uses multiple affinity groups");
+            groupAffinity.Mask |= (1ULL << core.windows.index);
+        }
+
+        CHECK_WIN32(UpdateProcThreadAttribute(attributes, 0, PROC_THREAD_ATTRIBUTE_GROUP_AFFINITY, &groupAffinity,
+                                              sizeof(groupAffinity), nullptr, nullptr));
+    }
+
+    impl = new Impl(std::move(func), attributes);
+}
+
+Thread::~Thread() {
+    delete impl;
+}
+
+void Thread::join() {
+    CTZ_ASSERT(impl != nullptr, "join() called on unjoinable thread");
+    impl->Join();
+
+    // TODO: 为什么跟下面的实现不一致
+}
+
+unsigned int Thread::numLogicalCPUs() {
+    unsigned int count = 0;
+    const auto& groups = getProcessorGroups();
+
+    for (size_t groupIdx = 0; groupIdx < groups.count; groupIdx++) {
+        const auto& group = groups.groups[groupIdx];
+        count += group.count;
+    }
+
+    return count;
+}
 
 #else
 
@@ -237,7 +320,7 @@ Thread::Thread(Affinity&& affinity, Function&& func)
     : impl(new Thread::Impl(std::move(affinity), std::move(func))) {}
 
 Thread::~Thread() {
-    CTZ_ASSERT(!impl, "Thread::join() was not called before destruction");
+    CTZ_ASSERT(impl == nullptr, "Thread::join() was not called before destruction");
 }
 
 void Thread::join() {

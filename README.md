@@ -24,7 +24,7 @@
 
 CIEL_DEFER(x) 是一个宏，会把 x 包装进一个 lambda 里，并且生成一个 ciel::finally&lt;F> 对象，它在析构函数里会自动执行之前存入的语句。
 
-可以用于简易的开关锁，如：
+可以用于实现类似 RAII 的操作如开关锁：
 
 ```cpp
 std::mutex mtx;
@@ -50,4 +50,24 @@ void f() {
 
 ## Thread
 
-TODO
+Thread 其实是一个 std::thread 的包装类，它在不支持线程亲和性的平台上行为与 std::thread 完全一致。
+
+而在支持的平台上，它在构造函数中创建完线程后会首先执行 setAffinity() 来进行一些设置，比如为其调用哪些可用的核心。然后再正常执行任务。
+
+```
+    // 判断当前平台是否支持线程亲和性。
+#if defined(_WIN32) || \
+    (defined(__linux__) && !defined(__ANDROID__) && !defined(__BIONIC__)) || \
+    defined(__FreeBSD__)
+    static constexpr bool supported = true;
+#else
+    static constexpr bool supported = false;
+#endif
+```
+
+Thread 还使用到了 Pimpl(Pointer to implementation) 范式，它可以降低编译依赖，提高编译速度，如果把 .cpp 编译成库还可做到商业保密。如果是动态库，还可保持稳定的 ABI。
+
+## thread_local
+
+C/C++ 关键字，意为每个线程会单独持有一份此变量。只能用在静态或全局变量上。
+

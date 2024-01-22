@@ -6,8 +6,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(CTZ
         src/config.cpp
+        src/fiber.cpp
+        src/scheduler.cpp
         src/task.cpp
         src/thread.cpp
+        src/worker.cpp
 )
 
 target_include_directories(CTZ PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
