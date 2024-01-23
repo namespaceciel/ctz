@@ -71,3 +71,60 @@ Thread 还使用到了 Pimpl(Pointer to implementation) 范式，它可以降低
 
 C/C++ 关键字，意为每个线程会单独持有一份此变量。只能用在静态或全局变量上。
 
+## 纤程 Fiber
+
+纤程其实就是操作系统课上学过的用户级线程，它在同一个线程内的的切换无需切换内核态，所以显然比线程快很多。（x86 线程之间的上下文切换通常需要数千个 CPU 周期，而纤程切换则需要不到 100 个）
+
+当然由于纤程是自己模拟的，所以需要自己分配栈空间。
+
+```cpp
+class OSFiber {
+public:
+    ~OSFiber();
+
+    static std::unique_ptr<OSFiber> createFiberFromCurrentThread();
+
+    // 返回一个带任务的纤程，switchTo 到这个纤程后会自动启动任务。（但是 switchTo 是用汇编写的所以并没有看懂为什么会自动启动）
+    // 任务最后必须 switchTo 到另一个纤程，而且不要写 return。
+    static std::unique_ptr<OSFiber> createFiber(size_t stackSize, const std::function<void()>& func);
+
+    void switchTo(OSFiber*);
+
+private:
+    static void run(OSFiber* self);
+
+    ctz_fiber_context context;
+    std::function<void()> target;
+    void* stack;
+
+};  // class OSFiber
+```
+
+context 是一组寄存器值，这是平台特异性的，切换时可以把这些数据保存在下面的模拟栈上。切换之类的操作要用到 C 和汇编，这部分是照搬的 marl 实现。
+
+target 是纤程创建时存入的待处理任务。
+
+stack 则是创建时 malloc 分配的堆内存，用来模拟栈。
+
+```cpp
+void ctz_fiber_set_target(struct ctz_fiber_context* ctx,
+                         void* stack,
+                         uint32_t stack_size,
+                         void (*target)(void*),
+                         void* arg) {
+
+#if defined(linux) || defined(__linux) || defined(__linux__)
+    if (__hwasan_tag_memory && __hwasan_tag_pointer) {
+        stack = __hwasan_tag_pointer(stack, 0);
+        __hwasan_tag_memory(stack, 0, stack_size);
+    }
+#endif
+    uintptr_t* stack_top = (uintptr_t*)((uint8_t*)(stack) + stack_size);
+    ctx->LR = (uintptr_t)&ctz_fiber_trampoline;
+    ctx->r0 = (uintptr_t)target;
+    ctx->r1 = (uintptr_t)arg;
+    ctx->SP = ((uintptr_t)stack_top) & ~(uintptr_t)15;
+}
+```
+
+在此函数中将模拟栈进行一些设置，比如栈顶指针和其它一些寄存器。
