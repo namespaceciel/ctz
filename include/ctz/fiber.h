@@ -7,9 +7,14 @@
 #include <memory>
 #include <set>
 
+#if defined(_WIN32)
+#include <ctz/osfiber_windows.h>
+#else
+#include <ctz/osfiber_asm.h>
+#endif
+
 NAMESPACE_CTZ_BEGIN
 
-class OSFiber;  // TODO
 class Worker;
 
 // Fiber 是 OSFiber 的封装，OSFiber 的实现全是一些平台特异的代码。

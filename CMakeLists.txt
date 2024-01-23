@@ -1,8 +1,20 @@
 cmake_minimum_required(VERSION 3.5)
-project(CTZ LANGUAGES CXX)
+project(CTZ LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set_source_files_properties(
+        src/osfiber_asm_aarch64.S
+        src/osfiber_asm_arm.S
+        src/osfiber_asm_loongarch64.S
+        src/osfiber_asm_mips64.S
+        src/osfiber_asm_ppc64.S
+        src/osfiber_asm_rv64.S
+        src/osfiber_asm_x64.S
+        src/osfiber_asm_x86.S
+        PROPERTIES LANGUAGE C
+)
 
 add_library(CTZ
         src/config.cpp
@@ -11,6 +23,25 @@ add_library(CTZ
         src/task.cpp
         src/thread.cpp
         src/worker.cpp
+        src/osfiber_asm.cpp
+        src/osfiber_windows.cpp
+        src/osfiber_aarch64.c
+        src/osfiber_arm.c
+        src/osfiber_asm_aarch64.S
+        src/osfiber_asm_arm.S
+        src/osfiber_asm_loongarch64.S
+        src/osfiber_asm_mips64.S
+        src/osfiber_asm_ppc64.S
+        src/osfiber_asm_rv64.S
+        src/osfiber_asm_x64.S
+        src/osfiber_asm_x86.S
+        src/osfiber_loongarch64.c
+        src/osfiber_mips64.c
+        src/osfiber_ppc64.c
+        src/osfiber_rv64.c
+        src/osfiber_x64.c
+        src/osfiber_x86.c
+        src/osfiber_emscripten.cpp
 )
 
 target_include_directories(CTZ PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -28,6 +59,7 @@ if (CTZ_BUILD_TESTS)
     enable_testing()
 
     add_executable(CTZ_TEST
+            test/osfiber_test.cpp
             test/task_test.cpp
             test/thread_test.cpp
     )
