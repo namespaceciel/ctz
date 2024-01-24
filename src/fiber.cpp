@@ -1,7 +1,48 @@
 #include <ctz/fiber.h>
+#include <ctz/worker.h>
 
 NAMESPACE_CTZ_BEGIN
 
+// Fiber
+Fiber* Fiber::current() noexcept {
+    auto worker = Worker::getCurrent();
+    return worker != nullptr ? worker->getCurrentFiber() : nullptr;
+}
+
+void Fiber::wait(std::mutex& mtx, const Predicate& pred) {
+    CTZ_ASSERT(worker == Worker::getCurrent(), "Fiber::wait() must only be called on the currently executing fiber");
+    worker->wait(mtx, nullptr, pred);
+}
+
+void Fiber::wait() {
+    worker->wait(nullptr);
+}
+
+void Fiber::notify() {
+    worker->enqueue(this);
+}
+
+Fiber::Fiber(std::unique_ptr<OSFiber>&& impl, uint32_t id) : id(id), impl(std::move(impl)), worker(Worker::getCurrent()) {
+    CTZ_ASSERT(worker != nullptr, "No Worker bound");
+}
+
+void Fiber::switchTo(Fiber* to) {
+    CTZ_ASSERT(worker == Worker::getCurrent(), "Fiber::switchTo() must only be called on the currently executing fiber");
+
+    if (to != this) {
+        impl->switchTo(to->impl.get());
+    }
+}
+
+std::unique_ptr<Fiber> Fiber::create(uint32_t id, size_t stackSize, const std::function<void()>& func) {
+    return std::unique_ptr<Fiber>(new Fiber(OSFiber::createFiber(stackSize, func), id));
+}
+
+std::unique_ptr<Fiber> Fiber::createFromCurrentThread(uint32_t id) {
+    return std::unique_ptr<Fiber>(new Fiber(OSFiber::createFiberFromCurrentThread(), id));
+}
+
+// WaitingFibers
 WaitingFibers::WaitingFibers() noexcept = default;
 
 WaitingFibers::operator bool() const noexcept {
@@ -38,6 +79,7 @@ void WaitingFibers::add(const TimePoint& timeout, Fiber* fiber) {
 
     const bool added = fibers.emplace(fiber, timeout).second;
     (void)added;
+
     CTZ_ASSERT(added, "WaitingFibers::add() fiber already waiting");
 }
 

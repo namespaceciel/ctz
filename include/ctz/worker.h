@@ -19,6 +19,8 @@
 NAMESPACE_CTZ_BEGIN
 
 class Scheduler;
+class Fiber;
+class WaitingFibers;
 
 // Work 存着 Worker 上排队的任务和纤程
 struct Work {
@@ -37,22 +39,7 @@ struct Work {
     // TODO: 调用时 mtx 貌似必须上锁？
     // 这里的 F 是一个谓词。
     template<class F>
-    void wait(F&& f) {
-        notifyAdded = true;
-
-        if (waiting) {  // 有正在等待的纤程
-            std::unique_lock<std::mutex> lock(mutex, std::adopt_lock);
-            added.wait_until(lock, waiting.next(), std::forward<F>(f));
-            lock.release();
-
-        } else {
-            std::unique_lock<std::mutex> lock(mutex, std::adopt_lock);
-            added.wait(lock, std::forward<F>(f));
-            lock.release();
-        }
-
-        notifyAdded = false;
-    }
+    void wait(F&& f);
 
 };  // struct Work
 
@@ -98,7 +85,7 @@ public:
     // wait() suspends execution of the current task until the predicate pred
     // returns true or the optional timeout is reached.
     // See Fiber::wait() for more information.
-    bool wait(std::mutex& mtx, const TimePoint* timeout, const Predicate& pred);
+    bool wait(std::mutex& waitLock, const TimePoint* timeout, const Predicate& pred);
 
     // wait() suspends execution of the current task until the fiber is
     // notified, or the optional timeout is reached.
@@ -136,10 +123,10 @@ public:
 
     // getCurrent() returns the Worker currently bound to the current
     // thread.
-    static Worker* getCurrent();
+    static Worker* getCurrent() noexcept;
 
     // getCurrentFiber() returns the Fiber currently being executed.
-    Fiber* getCurrentFiber() const;
+    Fiber* getCurrentFiber() const noexcept;
 
     // Unique identifier of the Worker.
     const uint32_t id;
@@ -174,11 +161,7 @@ private:
     // waiting.
     void enqueueFiberTimeouts();
 
-    void changeFiberState(Fiber* fiber,
-                          Fiber::State from,
-                          Fiber::State to) const;
-
-    void setFiberState(Fiber* fiber, Fiber::State to) const;
+    void setFiberState(Fiber* fiber, Fiber::State to) const noexcept;
 
     // The current worker bound to the current thread.
     static thread_local Worker* current;
@@ -208,5 +191,7 @@ struct SingleThreadedWorkers {
 };  // struct SingleThreadedWorkers
 
 NAMESPACE_CTZ_END
+
+#include <ctz/worker_fiber_patch.inl>
 
 #endif // CTZ_WORKER_H_

@@ -20,10 +20,11 @@ class Worker;
 // Fiber 是 OSFiber 的封装，OSFiber 的实现全是一些平台特异的代码。
 class Fiber {
 public:
+    using TimePoint = std::chrono::system_clock::time_point;
     using Predicate = std::function<bool()>;
 
     // 获取当前执行的纤程，如果没绑定到 Scheduler 上则为 nullptr。
-    static Fiber* current();
+    static Fiber* current() noexcept;
 
     // 暂停当前纤程直到 pred 为 true 时被 notify() 唤醒。若为 false 则无效，等待下一次 notify()。
     // 传入的 mtx 必须已经上锁！！！返回时会让 mtx 保持上锁状态。
@@ -121,5 +122,7 @@ private:
 };  // struct WaitingFibers
 
 NAMESPACE_CTZ_END
+
+#include <ctz/worker_fiber_patch.inl>
 
 #endif // CTZ_FIBER_H_

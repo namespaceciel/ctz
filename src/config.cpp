@@ -21,4 +21,12 @@ void warn(const char* msg, ...) {
     va_end(vararg);
 }
 
+void nop() noexcept {
+#if defined(_WIN32)
+    __nop();
+#else
+    __asm__ __volatile__("nop");
+#endif
+}
+
 NAMESPACE_CTZ_END

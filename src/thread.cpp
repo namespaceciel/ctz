@@ -46,11 +46,11 @@ Affinity Affinity::all() {
 
 #if defined(_WIN32)
     const auto& groups = getProcessorGroups();
-    for (size_t groupIdx = 0; groupIdx < groups.count; groupIdx++) {
+    for (size_t groupIdx = 0; groupIdx < groups.count; ++groupIdx) {
         const auto& group = groups.groups[groupIdx];
         Core core;
         core.windows.group = static_cast<decltype(Core::windows.group)>(groupIdx);
-        for (unsigned int coreIdx = 0; coreIdx < group.count; coreIdx++) {
+        for (unsigned int coreIdx = 0; coreIdx < group.count; ++coreIdx) {
             if ((group.affinity >> coreIdx) & 1) {
                 core.windows.index = static_cast<decltype(core.windows.index)>(coreIdx);
                 affinity.cores.emplace_back(std::move(core));
@@ -63,7 +63,7 @@ Affinity Affinity::all() {
     CPU_ZERO(&cpuset);
     if (pthread_getaffinity_np(thread, sizeof(cpu_set_t), &cpuset) == 0) {
         int count = CPU_COUNT(&cpuset);
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < count; ++i) {
             Core core;
             core.pthread.index = static_cast<uint16_t>(i);
             affinity.cores.emplace_back(std::move(core));
@@ -75,7 +75,7 @@ Affinity Affinity::all() {
     CPU_ZERO(&cpuset);
     if (pthread_getaffinity_np(thread, sizeof(cpuset_t), &cpuset) == 0) {
         int count = CPU_COUNT(&cpuset);
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < count; ++i) {
             Core core;
             core.pthread.index = static_cast<uint16_t>(i);
             affinity.cores.emplace_back(std::move(core));
@@ -237,7 +237,7 @@ Thread::Thread(Affinity&& affinity, Func&& func) {
     if (count > 0) {
         groupAffinity.Group = affinity[0].windows.group;
 
-        for (size_t i = 0; i < count; i++) {
+        for (size_t i = 0; i < count; ++i) {
             auto core = affinity[i];
             CTZ_ASSERT(groupAffinity.Group == core.windows.group, "Cannot create thread that uses multiple affinity groups");
             groupAffinity.Mask |= (1ULL << core.windows.index);
@@ -265,7 +265,7 @@ unsigned int Thread::numLogicalCPUs() {
     unsigned int count = 0;
     const auto& groups = getProcessorGroups();
 
-    for (size_t groupIdx = 0; groupIdx < groups.count; groupIdx++) {
+    for (size_t groupIdx = 0; groupIdx < groups.count; ++groupIdx) {
         const auto& group = groups.groups[groupIdx];
         count += group.count;
     }
@@ -296,7 +296,7 @@ public:
 #if defined(__linux__) && !defined(__ANDROID__) && !defined(__BIONIC__)
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
-        for (size_t i = 0; i < count; i++) {
+        for (size_t i = 0; i < count; ++i) {
             CPU_SET(affinity[i].pthread.index, &cpuset);
         }
         auto thread = pthread_self();
@@ -304,7 +304,7 @@ public:
 #elif defined(__FreeBSD__)
         cpuset_t cpuset;
         CPU_ZERO(&cpuset);
-        for (size_t i = 0; i < count; i++) {
+        for (size_t i = 0; i < count; ++i) {
             CPU_SET(affinity[i].pthread.index, &cpuset);
         }
         auto thread = pthread_self();

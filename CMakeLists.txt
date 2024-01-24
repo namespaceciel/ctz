@@ -60,6 +60,7 @@ if (CTZ_BUILD_TESTS)
 
     add_executable(CTZ_TEST
             test/osfiber_test.cpp
+            test/scheduler_test.cpp
             test/task_test.cpp
             test/thread_test.cpp
     )

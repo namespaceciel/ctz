@@ -2,14 +2,6 @@
 
 NAMESPACE_CTZ_BEGIN
 
-void nop() noexcept {
-#if defined(_WIN32)
-    __nop();
-#else
-    __asm__ __volatile__("nop");
-#endif
-}
-
 // 用于下面的 Scheduler::Scheduler(const SchedulerConfig& config)
 SchedulerConfig setConfigDefaults(const SchedulerConfig& cfgIn) {
     SchedulerConfig cfg{cfgIn};

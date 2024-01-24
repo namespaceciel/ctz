@@ -19,6 +19,8 @@ NAMESPACE_CTZ_BEGIN
 void fatal(const char* msg, ...);
 void warn(const char* msg, ...);
 
+void nop() noexcept;
+
 #if CTZ_DEBUG_ENABLED
 
 #define CTZ_FATAL(msg, ...) ctz::fatal(msg "\n", ##__VA_ARGS__);
