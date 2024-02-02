@@ -1,178 +1,97 @@
 #include <ctz/scheduler.h>
 
+#include <luaopener/luaopener.h>
+
 NAMESPACE_CTZ_BEGIN
 
-// 用于下面的 Scheduler::Scheduler(const SchedulerConfig& config)
-SchedulerConfig setConfigDefaults(const SchedulerConfig& cfgIn) {
-    SchedulerConfig cfg{cfgIn};
-
-    if (cfg.workerThread.count > 0 && !cfg.workerThread.affinityPolicy) {
-        cfg.workerThread.affinityPolicy = Policy::anyOf(Affinity::all());
-    }
-
-    return cfg;
-}
-
-thread_local Scheduler* Scheduler::bound{nullptr};
+Scheduler* Scheduler::bound = nullptr;
 
 // SchedulerConfig
-SchedulerConfig SchedulerConfig::allCores() {
-    return SchedulerConfig().setWorkerThreadCount(Thread::numLogicalCPUs());
+SchedulerConfig SchedulerConfig::allCores() noexcept {
+    return SchedulerConfig().setWorkerThreadCount(numLogicalCPUs());
 }
 
-
-SchedulerConfig& SchedulerConfig::setFiberStackSize(size_t size) {
+SchedulerConfig& SchedulerConfig::setFiberStackSize(const size_t size) noexcept {
     fiberStackSize = size;
     return *this;
 }
 
-SchedulerConfig& SchedulerConfig::setWorkerThreadCount(int count) {
-    workerThread.count = count;
-    return *this;
-}
-
-SchedulerConfig& SchedulerConfig::setWorkerThreadInitializer(const SchedulerConfig::ThreadInitializer& init) {
-    workerThread.initializer = init;
-    return *this;
-}
-
-SchedulerConfig& SchedulerConfig::setWorkerThreadAffinityPolicy(const std::shared_ptr<ctz::Policy>& policy) {
-    workerThread.affinityPolicy = policy;
+SchedulerConfig& SchedulerConfig::setWorkerThreadCount(const size_t count) noexcept {
+    threadCount = count;
     return *this;
 }
 
 // Scheduler
-Scheduler::Scheduler(const SchedulerConfig& config)
-    : cfg(setConfigDefaults(config)) {
+Scheduler::Scheduler(const SchedulerConfig& cfg)
+    : config(cfg) {}
 
-    for (int i = 0; i < cfg.workerThread.count; ++i) {
-        spinningWorkers[i] = -1;
-        workerThreads[i] = new Worker(this, Worker::Mode::MultiThreaded, i);
+void Scheduler::bind() noexcept {
+    setBound(this);
+
+    workers.reserve(config.threadCount);
+
+    for (size_t i = 0; i < config.threadCount; ++i) {
+        workers.emplace_back(new Worker());
     }
 
-    // TODO: 为什么要全部创建完再启动
-    for (int i = 0; i < cfg.workerThread.count; ++i) {
-        workerThreads[i]->start();
+    for (auto& t : workers) {
+        t->start();
     }
 }
 
-Scheduler::~Scheduler() {
-    {
-        // 等待所有单线程工人解绑。
-        std::unique_lock<std::mutex> ul(singleThreadedWorkers.mutex);
-        singleThreadedWorkers.unbind.wait(ul, [this]() {
-            return singleThreadedWorkers.byTid.empty();
-        });
-    }
-
-    // 等所有任务 stop()（执行完）。
-    for (int i = cfg.workerThread.count - 1; i > -1; --i) {
-        workerThreads[i]->stop();
-    }
-
-    for (int i = cfg.workerThread.count - 1; i > -1; --i) {
-        delete workerThreads[i];
-    }
+void Scheduler::setBound(Scheduler* scheduler) {
+    bound = scheduler;
 }
 
 Scheduler* Scheduler::get() noexcept {
     return bound;
 }
 
-
-void Scheduler::bind() {
-    CTZ_ASSERT(get() == nullptr, "Scheduler already bound");
-
-    setBound(this);
-    {
-        std::unique_lock<std::mutex> ul(singleThreadedWorkers.mutex);
-
-        auto worker = std::unique_ptr<Worker>(new Worker{this, Worker::Mode::SingleThreaded, static_cast<uint32_t>(-1)});
-        worker->start();
-        auto tid = std::this_thread::get_id();
-        singleThreadedWorkers.byTid.emplace(tid, std::move(worker));
-    }
-}
-
 void Scheduler::unbind() noexcept {
-    CTZ_ASSERT(get() != nullptr, "No scheduler bound");
+    CTZ_ASSERT(get() == this, "unbind a scheduler that's not yours");
+    CTZ_ASSERT(get() != nullptr, "no scheduler bound");
 
-    auto worker = Worker::getCurrent();
-    worker->stop();
-    {
-        std::unique_lock<std::mutex> ul(get()->singleThreadedWorkers.mutex);
+    // See TasksInTasks test, we need to ensure workers is valid before works left.
+    while (workNum) {}
 
-        auto tid = std::this_thread::get_id();
-        auto& workers = get()->singleThreadedWorkers.byTid;
-        auto it = workers.find(tid);
-
-        CTZ_ASSERT(it != workers.end(), "singleThreadedWorker not found");
-        CTZ_ASSERT(it->second.get() == worker, "worker is not bound?");
-
-        workers.erase(it);
-        if (workers.empty()) {
-            get()->singleThreadedWorkers.unbind.notify_one();
-        }
-    }
+    workers.clear();
     setBound(nullptr);
 }
 
-void Scheduler::enqueue(Task&& task) {
-    if (task.is(Task::Flags::SameThread)) {
-        Worker::getCurrent()->enqueue(std::move(task));
-        return;
-    }
+void Scheduler::enqueue(const std::function<void()>& newTask) {
+    CTZ_ASSERT(!workers.empty(), "Scheduler::enqueue on empty scheduler");
 
-    if (cfg.workerThread.count > 0) {
-        while (true) {
-            // 优先找最近开始 spin 的
-            auto i = --nextSpinningWorkerIdx % cfg.workerThread.count;
-            auto idx = spinningWorkers[i].exchange(-1);
+    ++workNum;
 
-            if (idx < 0) {
-                // 时间片轮转？找不到就下一个。
-                idx = nextEnqueueIndex++ % cfg.workerThread.count;
-            }
+    std::lock_guard<std::mutex> lg(mutex);
 
-            auto worker = workerThreads[idx];
-            if (worker->tryLock()) {
-                worker->enqueueAndUnlock(std::move(task));
-                return;
-            }
-        }
+    workers[index]->enqueue(newTask);
 
-    } else {
-        auto worker = Worker::getCurrent();
-        CTZ_ASSERT(worker != nullptr, "singleThreadedWorker not found. Did you forget to call Scheduler::bind()?");
-
-        worker->enqueue(std::move(task));
+    if (++index == workers.size()) {
+        index = 0;
     }
 }
 
-const SchedulerConfig& Scheduler::config() const noexcept {
-    return cfg;
+void schedule(const std::string& file, const std::string& name) {
+    std::function<void()> newTask = [=] {
+        ciel::LuaOpener opener;
+        opener.loadFile(file);
+
+        opener[name].call();
+
+        opener.closeFile();
+        remove(file.c_str());
+    };
+
+    schedule(newTask);
 }
 
-bool Scheduler::stealWork(Worker* thief, uint64_t from, Task& out) {
-    if (cfg.workerThread.count > 0) {
-        auto thread = workerThreads[from % cfg.workerThread.count];
-        if (thread != thief) {
-            if (thread->steal(out)) {
-                return true;
-            }
-        }
-    }
+void schedule(const std::function<void()>& newTask) {
+    auto current = Scheduler::get();
 
-    return false;
-}
+    CTZ_ASSERT(current != nullptr, "schedule when no scheduler bound");
 
-void Scheduler::onBeginSpinning(int workerId) {
-    auto idx = nextSpinningWorkerIdx++ % cfg.workerThread.count;
-    spinningWorkers[idx] = workerId;
-}
-
-void Scheduler::setBound(Scheduler* scheduler) noexcept {
-    bound = scheduler;
+    current->enqueue(newTask);
 }
 
 NAMESPACE_CTZ_END

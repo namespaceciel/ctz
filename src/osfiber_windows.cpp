@@ -23,12 +23,12 @@ std::unique_ptr<OSFiber> OSFiber::createFiberFromCurrentThread() {
     return out;
 }
 
-std::unique_ptr<OSFiber> OSFiber::createFiber(size_t stackSize, const std::function<void()>& func) {
+std::unique_ptr<OSFiber> OSFiber::createFiber(const size_t stackSize, std::function<void()>&& func) {
     auto out = std::unique_ptr<OSFiber>(new OSFiber);
 
     // stackSize is rounded up to the system's allocation granularity (typically 64 KB).
     out->fiber = CreateFiberEx(stackSize - 1, stackSize, FIBER_FLAG_FLOAT_SWITCH, &OSFiber::run, out.get());
-    out->target = func;
+    out->target = std::move(func);
     CTZ_ASSERT(out->fiber != nullptr, "CreateFiberEx() failed with error 0x%x", int(GetLastError()));
     return out;
 }

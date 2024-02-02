@@ -4,6 +4,10 @@
 #include <cstdio>
 #include <cstdlib>
 
+#if defined(_WIN32)
+#include <intrin.h>  // __nop()
+#endif
+
 NAMESPACE_CTZ_BEGIN
 
 void fatal(const char* msg, ...) {

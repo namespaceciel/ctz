@@ -11,7 +11,7 @@ constexpr size_t fiberStackSize = 16 * 1024;
 
 }  // namespace
 
-TEST(osfiber_test, OSFiber) {
+TEST(OSFiberTest, OSFiber) {
     std::string str;
     auto main = ctz::OSFiber::createFiberFromCurrentThread();
 
@@ -35,7 +35,7 @@ TEST(osfiber_test, OSFiber) {
     ASSERT_EQ(str, "CBA");
 }
 
-TEST(osfiber_test, StackAlignment) {
+TEST(OSFiberTest, StackAlignment) {
     uintptr_t address = 0;
 
     struct alignas(16) AlignTo16Bytes {

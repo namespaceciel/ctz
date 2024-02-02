@@ -55,18 +55,25 @@ public:
 
     static std::unique_ptr<OSFiber> createFiberFromCurrentThread();
 
-    // 返回一个带任务的纤程，switchTo 到这个纤程后会自动启动任务。（但是 switchTo 是用汇编写的所以并没有看懂为什么会自动启动）
-    // 任务最后必须 switchTo 到另一个纤程，而且不要写 return。
-    static std::unique_ptr<OSFiber> createFiber(size_t stackSize, const std::function<void()>& func);
+    static std::unique_ptr<OSFiber> createFiber(size_t, std::function<void()>&&);
 
-    void switchTo(OSFiber*);
+    void switchTo(OSFiber*) noexcept;
+
+    OSFiber(const OSFiber&) = delete;
+    OSFiber(OSFiber&&) = delete;
+    OSFiber& operator=(const OSFiber&) = delete;
+    OSFiber& operator=(OSFiber&&) = delete;
 
 private:
-    static void run(OSFiber* self);
+    friend class Fiber;
 
-    ctz_fiber_context context;
+    OSFiber() noexcept = default;
+
+    static void run(OSFiber*);
+
+    ctz_fiber_context context{};
     std::function<void()> target;
-    void* stack;
+    void* stack{nullptr};
 
 };  // class OSFiber
 

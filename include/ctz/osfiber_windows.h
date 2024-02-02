@@ -17,22 +17,26 @@ class OSFiber {
 public:
     ~OSFiber();
 
-    // createFiberFromCurrentThread() returns a fiber created from the current thread.
     static std::unique_ptr<OSFiber> createFiberFromCurrentThread();
 
-    // createFiber() returns a new fiber with the given stack size that will
-    // call func when switched to. func() must end by switching back to another
-    // fiber, and must not return.
-    static std::unique_ptr<OSFiber> createFiber(size_t stackSize, const std::function<void()>& func);
+    static std::unique_ptr<OSFiber> createFiber(size_t, std::function<void()>&&);
 
-    // switchTo() immediately switches execution to the given fiber.
-    // switchTo() must be called on the currently executing fiber.
     void switchTo(OSFiber*);
 
+    OSFiber(const OSFiber&) = delete;
+    OSFiber(OSFiber&&) = delete;
+    OSFiber& operator=(const OSFiber&) = delete;
+    OSFiber& operator=(OSFiber&&) = delete;
+
 private:
-    static inline void WINAPI run(void* self);
-    LPVOID fiber = nullptr;
-    bool isFiberFromThread = false;
+    friend class Fiber;
+
+    OSFiber() noexcept = default;
+
+    static inline void WINAPI run(void*);
+
+    LPVOID fiber{nullptr};
+    bool isFiberFromThread{false};
     std::function<void()> target;
 
 };  // class OSFiber
