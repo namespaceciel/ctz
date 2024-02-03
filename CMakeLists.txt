@@ -52,6 +52,7 @@ add_library(CTZ
         src/osfiber_emscripten.cpp
         src/waitgroup.cpp
         src/conditionvariable.cpp
+        src/event.cpp
 )
 
 target_include_directories(CTZ PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -77,6 +78,7 @@ if (CTZ_BUILD_TESTS)
             test/osfiber_test.cpp
             test/scheduler_test.cpp
             test/waitgroup_test.cpp
+            test/event_test.cpp
     )
 
     add_subdirectory(third_party/googletest)
@@ -93,3 +95,13 @@ if (CTZ_BUILD_TESTS)
 endif ()
 
 # qt gui TODO
+if (false)
+add_executable(CTZ_QT
+        qt/main.cpp
+        qt/scheduler_window.cpp
+        qt/work_widget.cpp
+        qt/new_built.cpp
+)
+
+target_link_libraries(CTZ_QT CTZ)
+endif ()
