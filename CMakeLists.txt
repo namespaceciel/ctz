@@ -53,6 +53,7 @@ add_library(CTZ
         src/waitgroup.cpp
         src/conditionvariable.cpp
         src/event.cpp
+        src/ticket.cpp
 )
 
 target_include_directories(CTZ PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -79,6 +80,8 @@ if (CTZ_BUILD_TESTS)
             test/scheduler_test.cpp
             test/waitgroup_test.cpp
             test/event_test.cpp
+            test/dag_test.cpp
+            test/ticket_test.cpp
     )
 
     add_subdirectory(third_party/googletest)

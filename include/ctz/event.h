@@ -18,7 +18,7 @@ public:
 
     };  // enum class Mode
 
-    Event(Mode mode = Mode::Auto, bool initialState = false);
+    Event(Mode = Mode::Auto, bool = false);
 
     void signal() const;
 
@@ -26,7 +26,7 @@ public:
 
     void wait() const;
 
-    // return true if the event is signaled.
+    // Return true if the event is signaled.
     // In auto mode, test() will clear the state, while isSignalled won't.
     bool test() const noexcept;
     bool isSignalled() const noexcept;
@@ -59,7 +59,7 @@ public:
 
 private:
     struct Shared {
-        Shared(Mode mode, bool initialState) noexcept;
+        Shared(Mode, bool) noexcept;
 
         void signal();
 
