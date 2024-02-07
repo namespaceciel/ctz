@@ -99,8 +99,9 @@ void Worker::takeTask() noexcept {
     while (true) {
         // find work
         {
-            std::lock_guard<std::mutex> lg(mutex);
             if (!queueTasks.empty()) {
+                std::lock_guard<std::mutex> lg(mutex);
+
                 currentTask = std::move(queueTasks.front());
                 queueTasks.pop();
                 return;
@@ -113,8 +114,9 @@ void Worker::takeTask() noexcept {
             nop(); nop(); nop(); nop(); nop(); nop(); nop(); nop();
             nop(); nop(); nop(); nop(); nop(); nop(); nop(); nop();
 
-            std::lock_guard<std::mutex> lg(mutex);
             if (!queueTasks.empty()) {
+                std::lock_guard<std::mutex> lg(mutex);
+
                 currentTask = std::move(queueTasks.front());
                 queueTasks.pop();
                 return;

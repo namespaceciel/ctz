@@ -1,7 +1,9 @@
 #include <ctz/ticket.h>
 
+#include <cmath>
+
 bool isPrime(int i) {
-    auto c = static_cast<int>(sqrt(i));
+    auto c = static_cast<int>(std::sqrt(i));
 
     for (int j = 2; j <= c; j++) {
         if (i % j == 0) {
