@@ -21,10 +21,12 @@ TEST(OSFiberTest, OSFiber) {
         str += "C";
         fiberC->switchTo(fiberB.get());
     });
+
     fiberB = ctz::OSFiber::createFiber(fiberStackSize, [&] {
         str += "B";
         fiberB->switchTo(fiberA.get());
     });
+
     fiberA = ctz::OSFiber::createFiber(fiberStackSize, [&] {
         str += "A";
         fiberA->switchTo(main.get());
@@ -35,6 +37,38 @@ TEST(OSFiberTest, OSFiber) {
     ASSERT_EQ(str, "CBA");
 }
 
+TEST(OSFiberTest, OSFiber2) {
+    std::string str;
+    auto main = ctz::OSFiber::createFiberFromCurrentThread();
+
+    std::unique_ptr<ctz::OSFiber> fiberA, fiberB, fiberC;
+
+    fiberC = ctz::OSFiber::createFiber(fiberStackSize, [&] {
+        str += "C";
+        fiberC->switchTo(fiberB.get());
+        str += "C";
+        fiberC->switchTo(fiberB.get());
+    });
+
+    fiberB = ctz::OSFiber::createFiber(fiberStackSize, [&] {
+        str += "B";
+        fiberB->switchTo(fiberA.get());
+        str += "B";
+        fiberB->switchTo(fiberA.get());
+    });
+
+    fiberA = ctz::OSFiber::createFiber(fiberStackSize, [&] {
+        str += "A";
+        fiberA->switchTo(fiberC.get());
+        str += "A";
+        fiberA->switchTo(main.get());
+    });
+
+    main->switchTo(fiberC.get());
+
+    ASSERT_EQ(str, "CBACBA");
+}
+
 TEST(OSFiberTest, StackAlignment) {
     uintptr_t address = 0;
 
@@ -43,7 +77,9 @@ TEST(OSFiberTest, StackAlignment) {
     };
 
     auto main = ctz::OSFiber::createFiberFromCurrentThread();
+
     std::unique_ptr<ctz::OSFiber> fiber;
+
     fiber = ctz::OSFiber::createFiber(fiberStackSize, [&] {
         AlignTo16Bytes stack_var;
 

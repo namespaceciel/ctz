@@ -97,6 +97,25 @@ if (CTZ_BUILD_TESTS)
     target_compile_options(CTZ_TEST PUBLIC -Wall -Wextra -Werror)
 endif ()
 
+# examples
+option(CTZ_BUILD_EXAMPLES "Build examples" ${PROJECT_IS_TOP_LEVEL})
+
+if(CTZ_BUILD_EXAMPLES)
+    function(build_example target)
+        add_executable(CTZ_${target}
+                example/${target}.cpp
+        )
+
+        target_link_libraries(CTZ_${target}
+                CTZ
+        )
+    endfunction(build_example)
+
+    build_example(ticket_example)
+    build_example(waitgroup_example)
+    build_example(event_example)
+endif(CTZ_BUILD_EXAMPLES)
+
 # qt gui TODO
 if (false)
 add_executable(CTZ_QT

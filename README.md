@@ -2,7 +2,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-This project is a hybrid thread / fiber task scheduler written in C++ 11, highly inspired by [Google Marl](https://github.com/google/marl).
+This project is a hybrid thread / fiber task scheduler written in C++ 11, highly inspired by [Google Marl](https://github.com/google/marl), and some simplifications were made as well.
 
 We provide a set of tools to guarantee the works' order users expected, like Ticket, WaitGroup and Event. And we have DAG for even more complex works. You can check the tests to see how each one of them works.
 
