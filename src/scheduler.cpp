@@ -29,7 +29,7 @@ void Scheduler::bind() noexcept {
     workers.reserve(config.threadCount);
 
     for (size_t i = 0; i < config.threadCount; ++i) {
-        workers.emplace_back(std::make_unique<Worker>());
+        workers.emplace_back(new Worker);
     }
 
     for (auto& t : workers) {
@@ -61,11 +61,9 @@ void Scheduler::enqueue(const std::function<void()>& newTask) {
 
     ++workNum;
 
-    std::lock_guard<std::mutex> lg(mutex);
+    workers[index++ % workers.size()]->enqueue(newTask);
 
-    workers[index]->enqueue(newTask);
-
-    if (++index == workers.size()) {
+    if (index >= workers.size()) {
         index = 0;
     }
 }
@@ -75,11 +73,9 @@ void Scheduler::enqueue(std::function<void()>&& newTask) {
 
     ++workNum;
 
-    std::lock_guard<std::mutex> lg(mutex);
+    workers[index++ % workers.size()]->enqueue(std::move(newTask));
 
-    workers[index]->enqueue(std::move(newTask));
-
-    if (++index == workers.size()) {
+    if (index >= workers.size()) {
         index = 0;
     }
 }

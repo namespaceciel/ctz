@@ -59,8 +59,7 @@ private:
 
     std::vector<std::unique_ptr<Worker>> workers;
     std::atomic<size_t> workNum{0};
-    size_t index{0};
-    std::mutex mutex;   // Guard enqueue() from different threads.
+    std::atomic<size_t> index{0};
 
 };  // class Scheduler
 

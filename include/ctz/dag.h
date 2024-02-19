@@ -122,7 +122,7 @@ protected:
             if (notify(ctx, idx)) {
                 wg.add(1);
 
-                schedule([=, this]() {
+                schedule([this, ctx, wg, idx]() {
                     invoke(ctx, idx, wg);
                     wg.done();
                 });
