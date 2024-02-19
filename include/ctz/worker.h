@@ -42,6 +42,10 @@ private:
 
     [[noreturn]] void run() noexcept;
 
+    bool stealWork(std::function<void()>&) noexcept;
+
+    bool stealFromThis(std::function<void()>&) noexcept;
+
     static thread_local Worker* current;
 
     Scheduler* const scheduler;

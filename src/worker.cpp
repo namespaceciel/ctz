@@ -125,12 +125,49 @@ void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
             }
         }
 
-        // TODO: steal
+        // steal
+        std::function<void()> out;
+        if (stealWork(out)) {
+            out();
+            --scheduler->workNum;
+            continue;
+        }
 
         // No works, block itself
         std::unique_lock<std::mutex> ul(mutex);
         cv.wait(ul, [this] { return !queuedFibers.empty() || !queuedTasks.empty(); });
     }
+}
+
+bool Worker::stealWork(std::function<void()>& out) noexcept {
+    for (size_t i = 0; i < scheduler->workers.size(); ++i) {
+        if (this == scheduler->workers[i].get()) {
+            continue;
+        }
+
+        if (scheduler->workers[i]->stealFromThis(out)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Worker::stealFromThis(std::function<void()>& out) noexcept {
+    // Since switching to mainFiber will be the last task pushed into queue when shutting down,
+    // we can't tell their differences, so we don't steal one-size queue.
+    if (queuedTasks.size() > 1) {
+        std::lock_guard<std::mutex> lg(mutex);
+
+        if (queuedTasks.size() > 1) {
+            out = std::move(queuedTasks.front());
+            queuedTasks.pop();
+
+            return true;
+        }
+    }
+
+    return false;
 }
 
 NAMESPACE_CTZ_END

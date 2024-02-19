@@ -52,6 +52,10 @@ void Scheduler::unbind() noexcept {
     // See TasksInTasks test, we need to ensure workers is valid before works left.
     while (workNum) {}
 
+    for (auto& t : workers) {
+        t->stop();
+    }
+
     workers.clear();
     setBound(nullptr);
 }
