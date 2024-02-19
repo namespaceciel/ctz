@@ -1,8 +1,6 @@
 #include <ctz/scheduler.h>
 #include <ctz/worker.h>
 
-#include <luaopener/luaopener.h>
-
 #include <unistd.h>
 
 NAMESPACE_CTZ_BEGIN
@@ -33,14 +31,9 @@ thread_local Worker* Worker::current = nullptr;
 Worker::Worker()
     : scheduler(Scheduler::get()),
       mainFiber(Fiber::createFromCurrentThread(this)),
-      scheduleFiber(Fiber::create(this, scheduler->config.fiberStackSize, [this] {
-          while (true) {
-              takeTask();
-
-              switchToFiber(currentTask.get());
-          }
-      })),
-      currentFiber(mainFiber.get()) {}
+      currentFiber(Fiber::create(this, scheduler->config.fiberStackSize, [this] {
+          run();
+      })) {}
 
 Worker::~Worker() {
     if (thread.joinable()) {
@@ -49,26 +42,23 @@ Worker::~Worker() {
 }
 
 void Worker::enqueue(const std::function<void()>& newTask) {
-    std::function<void()> decoratedTask = [=] {
-        newTask();
-        --scheduler->workNum;
-        switchToFiber(scheduleFiber.get());
-    };
+    queuedTasks.enqueue(newTask);
 
-    {
-        std::lock_guard<std::mutex> lg(mutex);
-        queueTasks.push(Fiber::create(this, scheduler->config.fiberStackSize, std::move(decoratedTask)));
-    }
+    //    CIEL_UNUSED(barrier.arrive());
+    cv.notify_one();
+}
 
+void Worker::enqueue(std::function<void()>&& newTask) {
+    queuedTasks.enqueue(std::move(newTask));
+
+    //    CIEL_UNUSED(barrier.arrive());
     cv.notify_one();
 }
 
 void Worker::enqueue(std::unique_ptr<Fiber>&& resumedTask) {
-    {
-        std::lock_guard<std::mutex> lg(mutex);
-        queueTasks.push(std::move(resumedTask));
-    }
+    queuedFibers.enqueue(std::move(resumedTask));
 
+    //    CIEL_UNUSED(barrier.arrive());
     cv.notify_one();
 }
 
@@ -76,63 +66,66 @@ void Worker::start() {
     CTZ_ASSERT(!thread.joinable(), "Worker::start() on a joinable thread");
 
     thread = std::thread([this] {
-        current = this;
+        current = this;     // bind thread_local worker* to this thread
 
-        switchToFiber(scheduleFiber.get());
+        mainFiber->switchTo(currentFiber.get());
     });
 }
 
 void Worker::stop() noexcept {
-    {
-        std::lock_guard<std::mutex> lg(mutex);
-        queueTasks.push(Fiber::create(this, scheduler->config.fiberStackSize, [=] {
-            switchToFiber(mainFiber.get());
-        }));
-    }
-
-    cv.notify_one();
+    enqueue([this] {
+        switchToFiber(std::move(mainFiber));    // mainFiber is done here...
+    });
 
     thread.join();
 }
 
-void Worker::takeTask() noexcept {
+bool Worker::takeTask(std::function<void()>& taskToBeDone) noexcept {
+    if (queuedTasks.try_dequeue(taskToBeDone)) {
+        return true;
+    }
+
+    for (int i = 0; i < 256; ++i) {
+        nop(); nop(); nop(); nop(); nop(); nop(); nop(); nop();
+        nop(); nop(); nop(); nop(); nop(); nop(); nop(); nop();
+        nop(); nop(); nop(); nop(); nop(); nop(); nop(); nop();
+        nop(); nop(); nop(); nop(); nop(); nop(); nop(); nop();
+
+        if (queuedTasks.try_dequeue(taskToBeDone)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
+    auto from = std::move(currentFiber);
+    currentFiber = std::move(to);
+    from->switchTo(currentFiber.get());
+}
+
+[[noreturn]] void Worker::run() noexcept {
     while (true) {
-        // find work
-        {
-            if (!queueTasks.empty()) {
-                std::lock_guard<std::mutex> lg(mutex);
-
-                currentTask = std::move(queueTasks.front());
-                queueTasks.pop();
-                return;
-            }
+        // Firstly complete all fibers
+        std::unique_ptr<Fiber> nextFiber;
+        if (queuedFibers.try_dequeue(nextFiber)) {
+            switchToFiber(std::move(nextFiber));   // And this fiber is done here.
         }
 
-        for (int i = 0; i < 256; ++i) {
-            nop(); nop(); nop(); nop(); nop(); nop(); nop(); nop();
-            nop(); nop(); nop(); nop(); nop(); nop(); nop(); nop();
-            nop(); nop(); nop(); nop(); nop(); nop(); nop(); nop();
-            nop(); nop(); nop(); nop(); nop(); nop(); nop(); nop();
-
-            if (!queueTasks.empty()) {
-                std::lock_guard<std::mutex> lg(mutex);
-
-                currentTask = std::move(queueTasks.front());
-                queueTasks.pop();
-                return;
-            }
+        // Secondly complete all tasks
+        std::function<void()> taskToBeDone;
+        if (takeTask(taskToBeDone)) {
+            taskToBeDone();
+            --scheduler->workNum;
+            continue;
         }
 
-        // not found
+        // No works, block itself
+//        barrier.wait(0);
         std::unique_lock<std::mutex> ul(mutex);
         cv.wait(ul);
     }
-}
-
-void Worker::switchToFiber(Fiber* to) noexcept {
-    auto from = currentFiber;
-    currentFiber = to;
-    from->switchTo(to);
 }
 
 NAMESPACE_CTZ_END

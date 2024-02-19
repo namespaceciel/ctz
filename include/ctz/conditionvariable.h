@@ -27,12 +27,20 @@ public:
 
             while (!pred()) {
                 mutex.lock();
-                waitingTasks.emplace_back(std::move(curWorker->currentTask));
+                auto& cur = waitingTasks.emplace_back(std::move(curWorker->currentFiber));
                 mutex.unlock();
 
                 ul.unlock();
 
-                curWorker->switchToFiber(curWorker->scheduleFiber.get());
+                // TODO: make use of queuedFibers
+//                curWorker->switchToFiber(Fiber::create(curWorker, curWorker->scheduler->config.fiberStackSize, [curWorker] {
+//                    curWorker->run();
+//                }));
+
+                curWorker->currentFiber = Fiber::create(curWorker, curWorker->scheduler->config.fiberStackSize, [curWorker] {
+                    curWorker->run();
+                });
+                cur->switchTo(curWorker->currentFiber.get());
 
                 ul.lock();
             }

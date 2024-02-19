@@ -50,7 +50,7 @@ TEST(EventTest, EventAutoWait) {
     std::atomic<int> counter = {0};
     auto event = ctz::Event(ctz::Event::Mode::Auto);
     auto done = ctz::Event(ctz::Event::Mode::Auto);
-    
+
     for (int i = 0; i < 3; ++i) {
         ctz::schedule([=, &counter] {
             event.wait();

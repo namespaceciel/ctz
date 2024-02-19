@@ -1,18 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(CTZ LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
-
-find_package(Qt6 COMPONENTS
-        Core
-        Gui
-        Widgets
-        REQUIRED)
 
 set_source_files_properties(
         src/osfiber_asm_aarch64.S
@@ -60,14 +50,11 @@ target_include_directories(CTZ PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(CTZ
         ciellab
-        luaopener
-        Qt::Core
-        Qt::Gui
-        Qt::Widgets
+        readerwriterqueue
 )
 
 add_subdirectory(third_party/ciellab)
-add_subdirectory(third_party/luaopener)
+add_subdirectory(third_party/readerwriterqueue)
 
 # unit tests
 option(CTZ_BUILD_TESTS "Build unit tests" ${PROJECT_IS_TOP_LEVEL})
@@ -115,15 +102,3 @@ if(CTZ_BUILD_EXAMPLES)
     build_example(waitgroup_example)
     build_example(event_example)
 endif(CTZ_BUILD_EXAMPLES)
-
-# qt gui TODO
-if (false)
-add_executable(CTZ_QT
-        qt/main.cpp
-        qt/scheduler_window.cpp
-        qt/work_widget.cpp
-        qt/new_built.cpp
-)
-
-target_link_libraries(CTZ_QT CTZ)
-endif ()

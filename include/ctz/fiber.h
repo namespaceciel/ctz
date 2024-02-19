@@ -31,6 +31,7 @@ public:
 
 private:
     friend class Worker;
+    friend class ConditionVariable;
 
     static std::unique_ptr<Fiber> create(Worker*, size_t, std::function<void()>&&);
 

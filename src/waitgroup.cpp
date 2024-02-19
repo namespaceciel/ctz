@@ -26,7 +26,7 @@ bool WaitGroup::done() const {
 void WaitGroup::wait() const {
     std::unique_lock<std::mutex> ul(data->mutex);
 
-    data->cv.wait(ul, [=] { return data->count == 0; });
+    data->cv.wait(ul, [this] { return data->count == 0; });
 }
 
 NAMESPACE_CTZ_END

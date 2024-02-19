@@ -31,17 +31,19 @@ struct SchedulerConfig {
 
 class Scheduler {
 public:
-    Scheduler(const SchedulerConfig&);
+    Scheduler(const SchedulerConfig&) noexcept;
 
     void bind() noexcept;
 
-    static void setBound(Scheduler*);
+    static void setBound(Scheduler*) noexcept;
 
     static Scheduler* get() noexcept;
 
     void unbind() noexcept;
 
     void enqueue(const std::function<void()>&);
+
+    void enqueue(std::function<void()>&&);
 
     Scheduler(const Scheduler&) = delete;
     Scheduler(Scheduler&&) = delete;
@@ -62,9 +64,14 @@ private:
 
 };  // class Scheduler
 
-void schedule(const std::string&, const std::string&);
+template<class Function>
+void schedule(Function&& f) {
+    auto current = Scheduler::get();
 
-void schedule(const std::function<void()>&);
+    CTZ_ASSERT(current != nullptr, "schedule when no scheduler bound");
+
+    current->enqueue(std::forward<Function>(f));
+}
 
 template<class Function, class... Args>
 void schedule(Function&& f, Args&&... args) {
@@ -72,7 +79,7 @@ void schedule(Function&& f, Args&&... args) {
 
     CTZ_ASSERT(current != nullptr, "schedule when no scheduler bound");
 
-    current->enqueue(std::function<void()>(std::bind(std::forward<Function>(f), std::forward<Args>(args)...)));
+    current->enqueue(std::bind(std::forward<Function>(f), std::forward<Args>(args)...));
 }
 
 NAMESPACE_CTZ_END

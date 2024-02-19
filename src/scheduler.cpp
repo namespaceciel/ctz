@@ -1,7 +1,5 @@
 #include <ctz/scheduler.h>
 
-#include <luaopener/luaopener.h>
-
 NAMESPACE_CTZ_BEGIN
 
 Scheduler* Scheduler::bound = nullptr;
@@ -22,7 +20,7 @@ SchedulerConfig& SchedulerConfig::setWorkerThreadCount(const size_t count) noexc
 }
 
 // Scheduler
-Scheduler::Scheduler(const SchedulerConfig& cfg)
+Scheduler::Scheduler(const SchedulerConfig& cfg) noexcept
     : config(cfg) {}
 
 void Scheduler::bind() noexcept {
@@ -31,7 +29,7 @@ void Scheduler::bind() noexcept {
     workers.reserve(config.threadCount);
 
     for (size_t i = 0; i < config.threadCount; ++i) {
-        workers.emplace_back(new Worker());
+        workers.emplace_back(std::make_unique<Worker>());
     }
 
     for (auto& t : workers) {
@@ -39,7 +37,7 @@ void Scheduler::bind() noexcept {
     }
 }
 
-void Scheduler::setBound(Scheduler* scheduler) {
+void Scheduler::setBound(Scheduler* scheduler) noexcept {
     bound = scheduler;
 }
 
@@ -72,26 +70,18 @@ void Scheduler::enqueue(const std::function<void()>& newTask) {
     }
 }
 
-void schedule(const std::string& file, const std::string& name) {
-    std::function<void()> newTask = [=] {
-        ciel::LuaOpener opener;
-        opener.loadFile(file);
+void Scheduler::enqueue(std::function<void()>&& newTask) {
+    CTZ_ASSERT(!workers.empty(), "Scheduler::enqueue on empty scheduler");
 
-        opener[name].call();
+    ++workNum;
 
-        opener.closeFile();
-        remove(file.c_str());
-    };
+    std::lock_guard<std::mutex> lg(mutex);
 
-    schedule(newTask);
-}
+    workers[index]->enqueue(std::move(newTask));
 
-void schedule(const std::function<void()>& newTask) {
-    auto current = Scheduler::get();
-
-    CTZ_ASSERT(current != nullptr, "schedule when no scheduler bound");
-
-    current->enqueue(newTask);
+    if (++index == workers.size()) {
+        index = 0;
+    }
 }
 
 NAMESPACE_CTZ_END
