@@ -4,9 +4,9 @@
 #include <ctz/config.h>
 #include <ctz/scheduler.h>
 
-#include <atomic>
-#include <list>
+#include <memory>
 #include <mutex>
+#include <vector>
 
 NAMESPACE_CTZ_BEGIN
 
@@ -24,18 +24,16 @@ public:
         Worker* curWorker = Worker::current;
 
         if (curWorker) {
-
             while (!pred()) {
+                auto* cur = curWorker->currentFiber.get();
+
                 mutex.lock();
-                auto& cur = waitingTasks.emplace_back(std::move(curWorker->currentFiber));
+                waitingTasks.emplace_back(std::move(curWorker->currentFiber));
                 mutex.unlock();
 
                 ul.unlock();
 
-                // TODO: make use of queuedFibers
-//                curWorker->switchToFiber(Fiber::create(curWorker, curWorker->scheduler->config.fiberStackSize, [curWorker] {
-//                    curWorker->run();
-//                }));
+                CTZ_ASSERT(!curWorker->currentFiber, "curWorker->currentFiber is supposed to be moved above");
 
                 curWorker->currentFiber = Fiber::create(curWorker, curWorker->scheduler->config.fiberStackSize, [curWorker] {
                     curWorker->run();
@@ -56,7 +54,7 @@ public:
     ConditionVariable& operator=(ConditionVariable&&) = delete;
 
 private:
-    std::list<std::unique_ptr<Fiber>> waitingTasks;
+    std::vector<std::unique_ptr<Fiber>> waitingTasks;
     std::mutex mutex;   // Guarding waitingTasks.
     std::condition_variable cv;     // Managing tasks outside of scheduler.
 

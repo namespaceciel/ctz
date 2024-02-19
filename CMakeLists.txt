@@ -50,11 +50,9 @@ target_include_directories(CTZ PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(CTZ
         ciellab
-        readerwriterqueue
 )
 
 add_subdirectory(third_party/ciellab)
-add_subdirectory(third_party/readerwriterqueue)
 
 # unit tests
 option(CTZ_BUILD_TESTS "Build unit tests" ${PROJECT_IS_TOP_LEVEL})

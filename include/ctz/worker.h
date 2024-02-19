@@ -5,9 +5,8 @@
 #include <ctz/fiber.h>
 
 #include <ciel/list.hpp>
-#include <readerwriterqueue.h>
 
-#include <barrier>
+#include <mutex>
 #include <queue>
 #include <thread>
 
@@ -39,8 +38,6 @@ private:
 
     void stop() noexcept;
 
-    bool takeTask(std::function<void()>&) noexcept;
-
     void switchToFiber(std::unique_ptr<Fiber>&&) noexcept;
 
     [[noreturn]] void run() noexcept;
@@ -49,13 +46,11 @@ private:
 
     Scheduler* const scheduler;
     std::unique_ptr<Fiber> mainFiber;
-    std::unique_ptr<Fiber> currentFiber{nullptr};   // // Since we need to tell the task who's its fiber...
+    std::unique_ptr<Fiber> currentFiber{nullptr};   // Since we need to tell the task who's its fiber...
     std::thread thread;
-    // moodycamel::ReaderWriterQueue is a single-producer, single-consumer lock-free queue
-    moodycamel::ReaderWriterQueue<std::unique_ptr<Fiber>> queuedFibers;  // produced by enqueue(std::unique_ptr<Fiber>&&), consumed by run()
-    moodycamel::ReaderWriterQueue<std::function<void()>> queuedTasks;   // produced by enqueue(std::function<void()>), consumed by run()
-//    std::barrier<> barrier{1};     // Block when no works left.
-    std::mutex mutex;
+    std::queue<std::unique_ptr<Fiber>> queuedFibers;  // produced by enqueue(std::unique_ptr<Fiber>&&), consumed by run()
+    std::queue<std::function<void()>> queuedTasks;    // produced by enqueue(std::function<void()>), consumed by run()
+    std::mutex mutex;       // Guarding queuedFibers and queuedTasks.
     std::condition_variable cv;
 
 };  // class Worker

@@ -42,23 +42,29 @@ Worker::~Worker() {
 }
 
 void Worker::enqueue(const std::function<void()>& newTask) {
-    queuedTasks.enqueue(newTask);
+    {
+        std::lock_guard<std::mutex> lg(mutex);
+        queuedTasks.push(newTask);
+    }
 
-    //    CIEL_UNUSED(barrier.arrive());
     cv.notify_one();
 }
 
 void Worker::enqueue(std::function<void()>&& newTask) {
-    queuedTasks.enqueue(std::move(newTask));
+    {
+        std::lock_guard<std::mutex> lg(mutex);
+        queuedTasks.push(std::move(newTask));
+    }
 
-    //    CIEL_UNUSED(barrier.arrive());
     cv.notify_one();
 }
 
 void Worker::enqueue(std::unique_ptr<Fiber>&& resumedTask) {
-    queuedFibers.enqueue(std::move(resumedTask));
+    {
+        std::lock_guard<std::mutex> lg(mutex);
+        queuedFibers.push(std::move(resumedTask));
+    }
 
-    //    CIEL_UNUSED(barrier.arrive());
     cv.notify_one();
 }
 
@@ -80,25 +86,6 @@ void Worker::stop() noexcept {
     thread.join();
 }
 
-bool Worker::takeTask(std::function<void()>& taskToBeDone) noexcept {
-    if (queuedTasks.try_dequeue(taskToBeDone)) {
-        return true;
-    }
-
-    for (int i = 0; i < 256; ++i) {
-        nop(); nop(); nop(); nop(); nop(); nop(); nop(); nop();
-        nop(); nop(); nop(); nop(); nop(); nop(); nop(); nop();
-        nop(); nop(); nop(); nop(); nop(); nop(); nop(); nop();
-        nop(); nop(); nop(); nop(); nop(); nop(); nop(); nop();
-
-        if (queuedTasks.try_dequeue(taskToBeDone)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
     auto from = std::move(currentFiber);
     currentFiber = std::move(to);
@@ -107,24 +94,42 @@ void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
 
 [[noreturn]] void Worker::run() noexcept {
     while (true) {
-        // Firstly complete all fibers
-        std::unique_ptr<Fiber> nextFiber;
-        if (queuedFibers.try_dequeue(nextFiber)) {
+        // Firstly complete all fibers.
+        if (!queuedFibers.empty()) {        // Fiber can't be stolen.
+            mutex.lock();
+
+            std::unique_ptr<Fiber> nextFiber = std::move(queuedFibers.front());
+            queuedFibers.pop();
+
+            mutex.unlock();
+
             switchToFiber(std::move(nextFiber));   // And this fiber is done here.
         }
 
-        // Secondly complete all tasks
-        std::function<void()> taskToBeDone;
-        if (takeTask(taskToBeDone)) {
-            taskToBeDone();
-            --scheduler->workNum;
-            continue;
+        // Secondly complete all tasks.
+        if (!queuedTasks.empty()) {
+            mutex.lock();
+
+            if (!queuedTasks.empty()) {
+                std::function<void()> taskToBeDone = std::move(queuedTasks.front());
+                queuedTasks.pop();
+
+                mutex.unlock();
+
+                taskToBeDone();
+                --scheduler->workNum;
+                continue;
+
+            } else {     // Newly enqueued task being stolen.
+                mutex.unlock();
+            }
         }
 
+        // TODO: steal
+
         // No works, block itself
-//        barrier.wait(0);
         std::unique_lock<std::mutex> ul(mutex);
-        cv.wait(ul);
+        cv.wait(ul, [this] { return !queuedFibers.empty() || !queuedTasks.empty(); });
     }
 }
 
