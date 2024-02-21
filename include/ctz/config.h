@@ -1,6 +1,13 @@
 #ifndef CTZ_CONFIG_H
 #define CTZ_CONFIG_H
 
+#include <ciel/config.hpp>
+
+// disable exceptions
+#ifdef CIEL_HAS_EXCEPTIONS
+#error "Exceptions are disabled since we use Fiber as the implementation of stackful symmetric coroutines."
+#endif
+
 // debug level
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 #define CTZ_DEBUG_ENABLED 1

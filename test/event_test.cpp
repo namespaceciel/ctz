@@ -4,6 +4,8 @@
 #include <ctz/scheduler.h>
 #include <ctz/waitgroup.h>
 
+#include <array>
+
 TEST(EventTest, EventIsSignalled) {
     for (auto mode : {ctz::Event::Mode::Manual, ctz::Event::Mode::Auto}) {
         auto event = ctz::Event(mode);

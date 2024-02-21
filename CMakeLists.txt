@@ -4,6 +4,9 @@ project(CTZ LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(CTZ_BUILD_TESTS "Build unit tests" ${PROJECT_IS_TOP_LEVEL})
+option(CTZ_BUILD_EXAMPLES "Build examples" ${PROJECT_IS_TOP_LEVEL})
+
 set_source_files_properties(
         src/osfiber_asm_aarch64.S
         src/osfiber_asm_arm.S
@@ -16,7 +19,7 @@ set_source_files_properties(
         PROPERTIES LANGUAGE C
 )
 
-add_library(CTZ
+add_library(CTZ STATIC
         src/config.cpp
         src/fiber.cpp
         src/scheduler.cpp
@@ -52,11 +55,11 @@ target_link_libraries(CTZ
         ciellab
 )
 
+target_compile_options(CTZ PUBLIC -fno-exceptions)
+
 add_subdirectory(third_party/ciellab)
 
 # unit tests
-option(CTZ_BUILD_TESTS "Build unit tests" ${PROJECT_IS_TOP_LEVEL})
-
 if (CTZ_BUILD_TESTS)
     enable_testing()
 
@@ -83,8 +86,6 @@ if (CTZ_BUILD_TESTS)
 endif ()
 
 # examples
-option(CTZ_BUILD_EXAMPLES "Build examples" ${PROJECT_IS_TOP_LEVEL})
-
 if(CTZ_BUILD_EXAMPLES)
     function(build_example target)
         add_executable(CTZ_${target}
@@ -94,6 +95,8 @@ if(CTZ_BUILD_EXAMPLES)
         target_link_libraries(CTZ_${target}
                 CTZ
         )
+
+        target_compile_options(CTZ_${target} PUBLIC -Wall -Wextra -Werror)
     endfunction(build_example)
 
     build_example(ticket_example)
