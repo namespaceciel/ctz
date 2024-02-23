@@ -22,7 +22,7 @@ struct SchedulerConfig {
     size_t threadCount{0};
 
     // Use all available cores.
-    static SchedulerConfig allCores() noexcept;
+    CIEL_NODISCARD static SchedulerConfig allCores() noexcept;
 
     SchedulerConfig& setFiberStackSize(const size_t) noexcept;
     SchedulerConfig& setWorkerThreadCount(const size_t) noexcept;
@@ -37,7 +37,7 @@ public:
 
     static void setBound(Scheduler*) noexcept;
 
-    static Scheduler* get() noexcept;
+    CIEL_NODISCARD static Scheduler* get() noexcept;
 
     void unbind() noexcept;
 

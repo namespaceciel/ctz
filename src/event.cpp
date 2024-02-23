@@ -53,7 +53,7 @@ void Event::wait() const {
     shared->wait();
 }
 
-bool Event::test() const noexcept {
+CIEL_NODISCARD bool Event::test() const noexcept {
     std::lock_guard<std::mutex> lg(shared->mutex);
 
     if (!shared->signalled) {
@@ -66,7 +66,7 @@ bool Event::test() const noexcept {
     return true;
 }
 
-bool Event::isSignalled() const noexcept {
+CIEL_NODISCARD bool Event::isSignalled() const noexcept {
     std::lock_guard<std::mutex> lg(shared->mutex);
     return shared->signalled;
 }

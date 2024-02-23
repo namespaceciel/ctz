@@ -28,13 +28,13 @@ public:
 
     // Return true if the event is signaled.
     // In auto mode, test() will clear the state, while isSignalled won't.
-    bool test() const noexcept;
-    bool isSignalled() const noexcept;
+    CIEL_NODISCARD bool test() const noexcept;
+    CIEL_NODISCARD bool isSignalled() const noexcept;
 
     // Construct a new Event, insert it into each one of the ranges' deps.
     // When one of them is signaled, this new Event will be signaled too.
     template<class Iter>
-    static Event any(Mode mode, Iter begin, Iter end) {
+    CIEL_NODISCARD static Event any(Mode mode, Iter begin, Iter end) {
         Event any(mode, false);
 
         for (auto it = begin; it != end; ++it) {
@@ -53,7 +53,7 @@ public:
     }
 
     template<class Iter>
-    static Event any(Iter begin, Iter end) {
+    CIEL_NODISCARD static Event any(Iter begin, Iter end) {
         return any(Mode::Auto, begin, end);
     }
 

@@ -98,7 +98,7 @@ protected:
 
     // Every time a task is completed, notify its downstream nodes,
     // decrement their dependency number, if becoming 0 return true.
-    bool notify(RunContext* ctx, size_t nodeIdx) {
+    CIEL_NODISCARD bool notify(RunContext* ctx, size_t nodeIdx) {
         Node* node = &nodes[nodeIdx];
 
         // Only have one dependency, steady go.
@@ -230,7 +230,7 @@ public:
     }
 
     // This builder will be of invalid state after build().
-    std::unique_ptr<DAG<T>> build() {
+    CIEL_NODISCARD std::unique_ptr<DAG<T>> build() {
         auto numNodes = dag->nodes.size();
 
         CTZ_ASSERT(numIns.size() == dag->nodes.size(), "DAGNodeBuilder vectors out of sync");

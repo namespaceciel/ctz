@@ -12,7 +12,7 @@
 
 NAMESPACE_CTZ_BEGIN
 
-unsigned int numLogicalCPUs() noexcept;
+CIEL_NODISCARD unsigned int numLogicalCPUs() noexcept;
 
 class Scheduler;
 
@@ -42,9 +42,9 @@ private:
 
     [[noreturn]] void run() noexcept;
 
-    bool stealWork(std::function<void()>&) noexcept;
+    CIEL_NODISCARD bool stealWork(std::function<void()>&) noexcept;
 
-    bool stealFromThis(std::function<void()>&) noexcept;
+    CIEL_NODISCARD bool stealFromThis(std::function<void()>&) noexcept;
 
     static thread_local Worker* current;
 

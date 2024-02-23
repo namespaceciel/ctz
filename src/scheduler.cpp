@@ -5,7 +5,7 @@ NAMESPACE_CTZ_BEGIN
 Scheduler* Scheduler::bound = nullptr;
 
 // SchedulerConfig
-SchedulerConfig SchedulerConfig::allCores() noexcept {
+CIEL_NODISCARD SchedulerConfig SchedulerConfig::allCores() noexcept {
     return SchedulerConfig().setWorkerThreadCount(numLogicalCPUs());
 }
 
@@ -41,7 +41,7 @@ void Scheduler::setBound(Scheduler* scheduler) noexcept {
     bound = scheduler;
 }
 
-Scheduler* Scheduler::get() noexcept {
+CIEL_NODISCARD Scheduler* Scheduler::get() noexcept {
     return bound;
 }
 
@@ -66,10 +66,6 @@ void Scheduler::enqueue(const std::function<void()>& newTask) {
     ++workNum;
 
     workers[index++ % workers.size()]->enqueue(newTask);
-
-    if (index >= workers.size()) {
-        index = 0;
-    }
 }
 
 void Scheduler::enqueue(std::function<void()>&& newTask) {
@@ -78,10 +74,6 @@ void Scheduler::enqueue(std::function<void()>&& newTask) {
     ++workNum;
 
     workers[index++ % workers.size()]->enqueue(std::move(newTask));
-
-    if (index >= workers.size()) {
-        index = 0;
-    }
 }
 
 NAMESPACE_CTZ_END

@@ -35,7 +35,7 @@ private:
 
 class TicketQueue {
 public:
-    std::shared_ptr<Ticket> take();
+    CIEL_NODISCARD std::shared_ptr<Ticket> take();
 
 private:
     friend class Ticket;

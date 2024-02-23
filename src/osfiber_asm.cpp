@@ -10,13 +10,13 @@ OSFiber::~OSFiber() {
     free(stack);
 }
 
-std::unique_ptr<OSFiber> OSFiber::createFiberFromCurrentThread() {
+CIEL_NODISCARD std::unique_ptr<OSFiber> OSFiber::createFiberFromCurrentThread() {
     auto out = std::unique_ptr<OSFiber>(new OSFiber);
     ctz_main_fiber_init(&out->context);
     return out;
 }
 
-std::unique_ptr<OSFiber> OSFiber::createFiber(const size_t stackSize, std::function<void()>&& func) {
+CIEL_NODISCARD std::unique_ptr<OSFiber> OSFiber::createFiber(const size_t stackSize, std::function<void()>&& func) {
     auto out = std::unique_ptr<OSFiber>(new OSFiber);
     out->target = std::move(func);
     out->stack = malloc(stackSize);

@@ -7,7 +7,7 @@ NAMESPACE_CTZ_BEGIN
 
 // numLogicalCPUs()
 #if defined(_WIN32)
-unsigned int numLogicalCPUs() noexcept {
+CIEL_NODISCARD unsigned int numLogicalCPUs() noexcept {
     unsigned int count = 0;
     const auto& groups = getProcessorGroups();
 
@@ -20,7 +20,7 @@ unsigned int numLogicalCPUs() noexcept {
 }
 
 #else
-unsigned int numLogicalCPUs() noexcept {
+CIEL_NODISCARD unsigned int numLogicalCPUs() noexcept {
     return static_cast<unsigned int>(sysconf(_SC_NPROCESSORS_ONLN));
 }
 
@@ -139,7 +139,7 @@ void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
     }
 }
 
-bool Worker::stealWork(std::function<void()>& out) noexcept {
+CIEL_NODISCARD bool Worker::stealWork(std::function<void()>& out) noexcept {
     for (size_t i = 0; i < scheduler->workers.size(); ++i) {
         if (this == scheduler->workers[i].get()) {
             continue;
@@ -153,7 +153,7 @@ bool Worker::stealWork(std::function<void()>& out) noexcept {
     return false;
 }
 
-bool Worker::stealFromThis(std::function<void()>& out) noexcept {
+CIEL_NODISCARD bool Worker::stealFromThis(std::function<void()>& out) noexcept {
     // Since switching to mainFiber will be the last task pushed into queue when shutting down,
     // we can't tell their differences, so we don't steal one-size queue.
     if (queuedTasks.size() > 1) {

@@ -33,9 +33,9 @@ private:
     friend class Worker;
     friend class ConditionVariable;
 
-    static std::unique_ptr<Fiber> create(Worker*, size_t, std::function<void()>&&);
+    CIEL_NODISCARD static std::unique_ptr<Fiber> create(Worker*, size_t, std::function<void()>&&);
 
-    static std::unique_ptr<Fiber> createFromCurrentThread(Worker*);
+    CIEL_NODISCARD static std::unique_ptr<Fiber> createFromCurrentThread(Worker*);
 
     Fiber(Worker*, std::unique_ptr<OSFiber>&&);
 

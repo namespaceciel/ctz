@@ -17,9 +17,9 @@ class OSFiber {
 public:
     ~OSFiber();
 
-    static std::unique_ptr<OSFiber> createFiberFromCurrentThread();
+    CIEL_NODISCARD static std::unique_ptr<OSFiber> createFiberFromCurrentThread();
 
-    static std::unique_ptr<OSFiber> createFiber(size_t, std::function<void()>&&);
+    CIEL_NODISCARD static std::unique_ptr<OSFiber> createFiber(size_t, std::function<void()>&&);
 
     void switchTo(OSFiber*);
 

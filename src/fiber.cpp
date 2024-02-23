@@ -11,11 +11,11 @@ void Fiber::switchTo(Fiber* to) {
     impl->switchTo(to->impl.get());
 }
 
-std::unique_ptr<Fiber> Fiber::create(Worker* w, const size_t stackSize, std::function<void()>&& func) {
+CIEL_NODISCARD std::unique_ptr<Fiber> Fiber::create(Worker* w, const size_t stackSize, std::function<void()>&& func) {
     return std::unique_ptr<Fiber>(new Fiber(w, OSFiber::createFiber(stackSize, std::move(func))));
 }
 
-std::unique_ptr<Fiber> Fiber::createFromCurrentThread(Worker* w) {
+CIEL_NODISCARD std::unique_ptr<Fiber> Fiber::createFromCurrentThread(Worker* w) {
     return std::unique_ptr<Fiber>(new Fiber(w, OSFiber::createFiberFromCurrentThread()));
 }
 

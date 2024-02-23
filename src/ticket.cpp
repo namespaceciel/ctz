@@ -25,7 +25,7 @@ void Ticket::done() noexcept {
 }
 
 // TicketQueue
-std::shared_ptr<Ticket> TicketQueue::take() {
+CIEL_NODISCARD std::shared_ptr<Ticket> TicketQueue::take() {
     std::lock_guard<std::mutex> lg(mutex);
 
     auto it = queue.insert(queue.end(), std::make_shared<Ticket>(this));

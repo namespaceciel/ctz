@@ -14,7 +14,7 @@ OSFiber::~OSFiber() {
     }
 }
 
-std::unique_ptr<OSFiber> OSFiber::createFiberFromCurrentThread() {
+CIEL_NODISCARD std::unique_ptr<OSFiber> OSFiber::createFiberFromCurrentThread() {
     auto out = std::unique_ptr<OSFiber>(new OSFiber);
 
     out->fiber = ConvertThreadToFiberEx(nullptr, FIBER_FLAG_FLOAT_SWITCH);
@@ -23,7 +23,7 @@ std::unique_ptr<OSFiber> OSFiber::createFiberFromCurrentThread() {
     return out;
 }
 
-std::unique_ptr<OSFiber> OSFiber::createFiber(const size_t stackSize, std::function<void()>&& func) {
+CIEL_NODISCARD std::unique_ptr<OSFiber> OSFiber::createFiber(const size_t stackSize, std::function<void()>&& func) {
     auto out = std::unique_ptr<OSFiber>(new OSFiber);
 
     // stackSize is rounded up to the system's allocation granularity (typically 64 KB).
