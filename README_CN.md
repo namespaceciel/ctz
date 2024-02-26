@@ -209,6 +209,8 @@ TEST(DAGTest, DAGFanOutFanIn) {
 
 ### Fiber
 
+协程的一些基础知识见：[CoroutineExplanation_CN.md](./CoroutineExplanation_CN.md)
+
 使用纤程作为有栈对称协程实现，它可以在执行过程中保存目前状态并切换至其它任意一个纤程，这是整个项目的基石。
 
 纤程与操作系统课上学到的用户级线程类似，切换时无需像线程一样切换至内核态，开销更小。x86 线程之间的上下文切换通常需要数千个 CPU 周期，而纤程切换则只需要不到 100 个。
@@ -377,6 +379,44 @@ CTZ_ASM_SYMBOL(ctz_fiber_swap):
 
     ret
 ```
+
+### Scheduler
+
+一个天真的线程池实现，可能是一个全局的线程池和任务队列，也只有对应的一把锁。所有线程会争抢这把锁来取得自己的任务，这样锁竞争会非常激烈。
+
+为了减少锁竞争的性能损失，我们将任务队列分片绑定到每个工人线程上，再用工作窃取算法（也就是某线程自己的任务队列空了以后会去其它线程的任务队列尝试拿）来平衡每个线程的工作量。这样每个任务队列的锁竞争就被缩小到：Scheduler 派发任务，工人线程拿任务，被别的工人线程偷任务。
+
+一个 Scheduler 在构造的时候需要传入一直 SchedulerConfig，里面包含了要开的线程数量和 Fiber 模拟栈大小（见下节）。它的内部成员为：
+
+```cpp
+std::vector<std::unique_ptr<Worker>> workers;
+std::atomic<size_t> workNum{0};
+std::atomic<size_t> index{0};
+```
+
+workers 根据线程数量动态 reserve 对应容量然后构造一批线程（每个工人持有者一个线程）；
+
+workNum 是入队并还没被做完的任务量，在 Scheduler 析构时会有一个自旋锁来忙等待 workNum 归零；
+
+index 是新任务入队时选择的 workers 下标，每次原子地自增，结果对线程量（workers.size()）取余，便能得到需要入队的那个工人线程。并且无符号数自增到最大值后会回到 0，所以不用担心溢出问题。之后取得工人内部的锁并且将任务加入工人内部的
+
+```cpp
+std::queue<std::function<void()>> queuedTasks
+```
+
+注：使用 std::unique_ptr&lt;Worker> 而不是 Worker 纯粹是因为语义问题：Worker 不允许复制和移动构造，而这使其不符合容器的元素条件。其它地方也是如此。
+
+### Worker
+
+每个工人持有着一个线程，当它开始工作时，会切换到一个工人协程，并启动
+
+```cpp
+[[noreturn]] void run() noexcept;
+```
+
+在这个函数中它会一直处理队列中的任务，如果自己的队列空了，会尝试去偷其它工人的队列，如果再没有，则阻塞自己等待新任务入队时被唤醒。
+
+当 Scheduler 要关闭并且结束工人线程时，会向任务队列派发最后一个任务：切回到主纤程。为了这个特殊任务不被偷，偷任务的判断条件是队列中任务不止一个。
 
 ### ConditionVariable
 

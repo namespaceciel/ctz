@@ -102,4 +102,8 @@ if(CTZ_BUILD_EXAMPLES)
     build_example(ticket_example)
     build_example(waitgroup_example)
     build_example(event_example)
+
+    add_executable(stackless_coroutine_example
+            example/stackless_coroutine_example.cpp
+    )
 endif(CTZ_BUILD_EXAMPLES)
