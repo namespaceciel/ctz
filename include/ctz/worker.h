@@ -6,6 +6,7 @@
 
 #include <ciel/list.hpp>
 
+#include <condition_variable>
 #include <mutex>
 #include <queue>
 #include <thread>
@@ -49,7 +50,7 @@ private:
     static thread_local Worker* current;
 
     Scheduler* const scheduler;
-    std::unique_ptr<Fiber> mainFiber;
+    std::unique_ptr<Fiber> mainFiber{nullptr};
     std::unique_ptr<Fiber> currentFiber{nullptr};   // Since we need to tell the task who's its fiber...
     std::thread thread;
     std::queue<std::unique_ptr<Fiber>> queuedFibers;  // produced by enqueue(std::unique_ptr<Fiber>&&), consumed by run()

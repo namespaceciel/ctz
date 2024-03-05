@@ -1,39 +1,18 @@
 #include <ctz/scheduler.h>
 #include <ctz/worker.h>
 
-#include <unistd.h>
-
 NAMESPACE_CTZ_BEGIN
 
-// numLogicalCPUs()
-#if defined(_WIN32)
 CIEL_NODISCARD unsigned int numLogicalCPUs() noexcept {
-    unsigned int count = 0;
-    const auto& groups = getProcessorGroups();
+    CIEL_PRECONDITION(std::thread::hardware_concurrency() != 0);
 
-    for (size_t groupIdx = 0; groupIdx < groups.count; ++groupIdx) {
-        const auto& group = groups.groups[groupIdx];
-        count += group.count;
-    }
-
-    return count;
+    return std::thread::hardware_concurrency();
 }
-
-#else
-CIEL_NODISCARD unsigned int numLogicalCPUs() noexcept {
-    return static_cast<unsigned int>(sysconf(_SC_NPROCESSORS_ONLN));
-}
-
-#endif
 
 thread_local Worker* Worker::current = nullptr;
 
 Worker::Worker()
-    : scheduler(Scheduler::get()),
-      mainFiber(Fiber::createFromCurrentThread(this)),
-      currentFiber(Fiber::create(this, scheduler->config.fiberStackSize, [this] {
-          run();
-      })) {}
+    : scheduler(Scheduler::get()) {}
 
 Worker::~Worker() {
     if (thread.joinable()) {
@@ -73,6 +52,11 @@ void Worker::start() {
 
     thread = std::thread([this] {
         current = this;     // bind thread_local worker* to this thread
+
+        mainFiber = Fiber::createFromCurrentThread(this),
+        currentFiber = Fiber::create(this, scheduler->config.fiberStackSize, [this] {
+            run();
+        });
 
         mainFiber->switchTo(currentFiber.get());
     });

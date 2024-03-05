@@ -4,10 +4,6 @@
 #include <cstdio>
 #include <cstdlib>
 
-#if defined(_WIN32)
-#include <intrin.h>  // __nop()
-#endif
-
 NAMESPACE_CTZ_BEGIN
 
 void fatal(const char* msg, ...) {
@@ -26,11 +22,7 @@ void warn(const char* msg, ...) {
 }
 
 void nop() noexcept {
-#if defined(_WIN32)
-    __nop();
-#else
     __asm__ __volatile__("nop");
-#endif
 }
 
 NAMESPACE_CTZ_END
