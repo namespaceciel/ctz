@@ -1,7 +1,6 @@
 #include <ctz/waitgroup.h>
 
-#include <iostream>
-#include <string>
+#include <cstdio>
 
 int main() {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());

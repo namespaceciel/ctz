@@ -1,5 +1,7 @@
 #include <ctz/event.h>
 
+#include <cstdio>
+
 int main() {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();

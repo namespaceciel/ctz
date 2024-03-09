@@ -1,6 +1,7 @@
 #include <ctz/ticket.h>
 
 #include <cmath>
+#include <cstdio>
 
 bool isPrime(int i) {
     auto c = static_cast<int>(std::sqrt(i));
@@ -25,7 +26,7 @@ int main() {
 
     ctz::TicketQueue queue;
 
-    for (int searchBase = 1; searchBase <= 10000000; searchBase += 10000) {
+    for (int searchBase = 1; searchBase <= 100000; searchBase += 1000) {
         // Take a Ticket being in queue.
         auto ticket = queue.take();
 
@@ -33,7 +34,7 @@ int main() {
 
             // Multiple tasks calculate primes at the same time, storing them into std::vector
             std::vector<int> primes;
-            for (int i = searchBase; i < searchBase + 10000; ++i) {
+            for (int i = searchBase; i < searchBase + 1000; ++i) {
                 if (isPrime(i)) {
                     primes.push_back(i);
                 }
