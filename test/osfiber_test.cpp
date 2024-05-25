@@ -9,7 +9,7 @@ namespace {
 // See: https://github.com/google/marl/issues/201
 constexpr size_t fiberStackSize = 16 * 1024;
 
-}  // namespace
+} // namespace
 
 TEST(OSFiberTest, OSFiber) {
     std::string str;

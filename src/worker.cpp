@@ -3,7 +3,8 @@
 
 NAMESPACE_CTZ_BEGIN
 
-CIEL_NODISCARD unsigned int numLogicalCPUs() noexcept {
+CIEL_NODISCARD unsigned int
+numLogicalCPUs() noexcept {
     CIEL_PRECONDITION(std::thread::hardware_concurrency() != 0);
 
     return std::thread::hardware_concurrency();
@@ -20,7 +21,8 @@ Worker::~Worker() {
     }
 }
 
-void Worker::enqueue(const std::function<void()>& newTask) {
+void
+Worker::enqueue(const std::function<void()>& newTask) {
     {
         std::lock_guard<std::mutex> lg(mutex);
         queuedTasks.push(newTask);
@@ -29,7 +31,8 @@ void Worker::enqueue(const std::function<void()>& newTask) {
     cv.notify_one();
 }
 
-void Worker::enqueue(std::function<void()>&& newTask) {
+void
+Worker::enqueue(std::function<void()>&& newTask) {
     {
         std::lock_guard<std::mutex> lg(mutex);
         queuedTasks.push(std::move(newTask));
@@ -38,7 +41,8 @@ void Worker::enqueue(std::function<void()>&& newTask) {
     cv.notify_one();
 }
 
-void Worker::enqueue(std::unique_ptr<Fiber>&& resumedTask) {
+void
+Worker::enqueue(std::unique_ptr<Fiber>&& resumedTask) {
     {
         std::lock_guard<std::mutex> lg(mutex);
         queuedFibers.push(std::move(resumedTask));
@@ -47,13 +51,14 @@ void Worker::enqueue(std::unique_ptr<Fiber>&& resumedTask) {
     cv.notify_one();
 }
 
-void Worker::start() {
+void
+Worker::start() {
     CTZ_ASSERT(!thread.joinable(), "Worker::start() on a joinable thread");
 
     thread = std::thread([this] {
-        current = this;     // bind thread_local worker* to this thread
+        current = this; // bind thread_local worker* to this thread
 
-        mainFiber = Fiber::createFromCurrentThread(this),
+        mainFiber    = Fiber::createFromCurrentThread(this),
         currentFiber = Fiber::create(this, scheduler->config.fiberStackSize, [this] {
             run();
         });
@@ -62,24 +67,27 @@ void Worker::start() {
     });
 }
 
-void Worker::stop() noexcept {
+void
+Worker::stop() noexcept {
     enqueue([this] {
-        switchToFiber(std::move(mainFiber));    // mainFiber is done here...
+        switchToFiber(std::move(mainFiber)); // mainFiber is done here...
     });
 
     thread.join();
 }
 
-void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
-    auto from = std::move(currentFiber);
+void
+Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
+    auto from    = std::move(currentFiber);
     currentFiber = std::move(to);
     from->switchTo(currentFiber.get());
 }
 
-[[noreturn]] void Worker::run() noexcept {
+[[noreturn]] void
+Worker::run() noexcept {
     while (true) {
         // Firstly complete all fibers.
-        if (!queuedFibers.empty()) {        // Fiber can't be stolen.
+        if (!queuedFibers.empty()) { // Fiber can't be stolen.
             mutex.lock();
 
             std::unique_ptr<Fiber> nextFiber = std::move(queuedFibers.front());
@@ -87,7 +95,7 @@ void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
 
             mutex.unlock();
 
-            switchToFiber(std::move(nextFiber));   // And this fiber is done here.
+            switchToFiber(std::move(nextFiber)); // And this fiber is done here.
         }
 
         // Secondly complete all tasks.
@@ -104,7 +112,7 @@ void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
                 --scheduler->workNum;
                 continue;
 
-            } else {     // Newly enqueued task being stolen.
+            } else { // Newly enqueued task being stolen.
                 mutex.unlock();
             }
         }
@@ -119,11 +127,14 @@ void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
 
         // No works, block itself
         std::unique_lock<std::mutex> ul(mutex);
-        cv.wait(ul, [this] { return !queuedFibers.empty() || !queuedTasks.empty(); });
+        cv.wait(ul, [this] {
+            return !queuedFibers.empty() || !queuedTasks.empty();
+        });
     }
 }
 
-CIEL_NODISCARD bool Worker::stealWork(std::function<void()>& out) noexcept {
+CIEL_NODISCARD bool
+Worker::stealWork(std::function<void()>& out) noexcept {
     for (size_t i = 0; i < scheduler->workers.size(); ++i) {
         if (this == scheduler->workers[i].get()) {
             continue;
@@ -137,7 +148,8 @@ CIEL_NODISCARD bool Worker::stealWork(std::function<void()>& out) noexcept {
     return false;
 }
 
-CIEL_NODISCARD bool Worker::stealFromThis(std::function<void()>& out) noexcept {
+CIEL_NODISCARD bool
+Worker::stealFromThis(std::function<void()>& out) noexcept {
     // Since switching to mainFiber will be the last task pushed into queue when shutting down,
     // we can't tell their differences, so we don't steal one-size queue.
     if (queuedTasks.size() > 1) {

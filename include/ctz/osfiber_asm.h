@@ -33,19 +33,19 @@
 extern "C" {
 
 #if defined(__EMSCRIPTEN__)
-void ctz_main_fiber_init(ctz_fiber_context* ctx);
+void
+ctz_main_fiber_init(ctz_fiber_context* ctx);
 #else
-inline void ctz_main_fiber_init(ctz_fiber_context*) {}
+inline void
+ctz_main_fiber_init(ctz_fiber_context*) {}
 #endif
-extern void ctz_fiber_set_target(ctz_fiber_context*,
-                                void* stack,
-                                uint32_t stack_size,
-                                void (*target)(void*),
-                                void* arg);
+extern void
+ctz_fiber_set_target(ctz_fiber_context*, void* stack, uint32_t stack_size, void (*target)(void*), void* arg);
 
-extern void ctz_fiber_swap(ctz_fiber_context* from, const ctz_fiber_context* to);
+extern void
+ctz_fiber_swap(ctz_fiber_context* from, const ctz_fiber_context* to);
 
-}  // extern "C"
+} // extern "C"
 
 NAMESPACE_CTZ_BEGIN
 
@@ -53,29 +53,37 @@ class OSFiber {
 public:
     ~OSFiber();
 
-    CIEL_NODISCARD static std::unique_ptr<OSFiber> createFiberFromCurrentThread();
+    CIEL_NODISCARD static std::unique_ptr<OSFiber>
+    createFiberFromCurrentThread();
 
-    CIEL_NODISCARD static std::unique_ptr<OSFiber> createFiber(size_t, std::function<void()>&&);
+    CIEL_NODISCARD static std::unique_ptr<OSFiber>
+    createFiber(size_t, std::function<void()>&&);
 
-    void switchTo(OSFiber*) noexcept;
+    void
+    switchTo(OSFiber*) noexcept;
 
     OSFiber(const OSFiber&) = delete;
-    OSFiber(OSFiber&&) = delete;
-    OSFiber& operator=(const OSFiber&) = delete;
-    OSFiber& operator=(OSFiber&&) = delete;
+    OSFiber(OSFiber&&)      = delete;
+    OSFiber&
+    operator=(const OSFiber&)
+        = delete;
+    OSFiber&
+    operator=(OSFiber&&)
+        = delete;
 
 private:
     friend class Fiber;
 
     OSFiber() noexcept = default;
 
-    static void run(OSFiber*);
+    static void
+    run(OSFiber*);
 
     ctz_fiber_context context{};
     std::function<void()> target;
     void* stack{nullptr};
 
-};  // class OSFiber
+}; // class OSFiber
 
 NAMESPACE_CTZ_END
 

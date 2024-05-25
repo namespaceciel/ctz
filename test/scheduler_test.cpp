@@ -9,7 +9,7 @@ TEST(SchedulerTest, ConstructAndDestruct) {
 TEST(SchedulerTest, BindAndUnbind) {
     auto scheduler = std::unique_ptr<ctz::Scheduler>(new ctz::Scheduler(ctz::SchedulerConfig()));
     scheduler->bind();
-    
+
     auto got = ctz::Scheduler::get();
     ASSERT_EQ(scheduler.get(), got);
 
@@ -37,7 +37,9 @@ TEST(SchedulerTest, SingleThreadCounter) {
         CIEL_DEFER(scheduler.unbind());
 
         for (int i = 0; i < 1000; ++i) {
-            ctz::schedule([&] { ++counter; });
+            ctz::schedule([&] {
+                ++counter;
+            });
         }
     }
 
@@ -53,7 +55,9 @@ TEST(SchedulerTest, MultipleThreadCounter) {
         CIEL_DEFER(scheduler.unbind());
 
         for (int i = 0; i < 1000; ++i) {
-            ctz::schedule([&] { ++counter; });
+            ctz::schedule([&] {
+                ++counter;
+            });
         }
     }
 

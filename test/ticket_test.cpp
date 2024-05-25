@@ -9,9 +9,9 @@ TEST(TicketTest, all) {
 
     ctz::TicketQueue queue;
 
-    constexpr int count = 1000;
+    constexpr int count   = 1000;
     std::atomic<int> next = {0};
-    int result[count] = {};
+    int result[count]     = {};
 
     for (int i = 0; i < count; ++i) {
         auto ticket = queue.take();

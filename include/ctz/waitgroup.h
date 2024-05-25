@@ -17,7 +17,7 @@ struct Data {
     std::atomic<size_t> count;
     std::mutex mutex;
 
-};  // struct Data
+}; // struct Data
 
 class WaitGroup {
 public:
@@ -25,14 +25,16 @@ public:
 
     void add(size_t = 1) const noexcept;
 
-    bool done() const;
+    bool
+    done() const;
 
-    void wait() const;
+    void
+    wait() const;
 
 private:
     const std::shared_ptr<Data> data;
 
-};  // class WaitGroup
+}; // class WaitGroup
 
 NAMESPACE_CTZ_END
 

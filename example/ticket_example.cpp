@@ -3,7 +3,8 @@
 #include <cmath>
 #include <cstdio>
 
-bool isPrime(int i) {
+bool
+isPrime(int i) {
     auto c = static_cast<int>(std::sqrt(i));
 
     for (int j = 2; j <= c; j++) {
@@ -15,10 +16,11 @@ bool isPrime(int i) {
     return true;
 }
 
-int main() {
+int
+main() {
     // Choose how many cores needed, allCores() will pick all of them.
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();   // Bound to global, check out waitgroup_example for reasons
+    scheduler.bind(); // Bound to global, check out waitgroup_example for reasons
 
     // CIEL_DEFER wrap the expression into a lambda, storing it to ciel::finally,
     // when it reaches out of scope, the destructor of ciel::finally will call that expression earlier.
@@ -30,8 +32,8 @@ int main() {
         // Take a Ticket being in queue.
         auto ticket = queue.take();
 
-        ctz::schedule([=] {     // lambda capture by value, all tools are implemented as std::shared_ptr, guaranteeing the lifetime correctness.
-
+        ctz::schedule([=] { // lambda capture by value, all tools are implemented as std::shared_ptr, guaranteeing the
+                            // lifetime correctness.
             // Multiple tasks calculate primes at the same time, storing them into std::vector
             std::vector<int> primes;
             for (int i = searchBase; i < searchBase + 1000; ++i) {

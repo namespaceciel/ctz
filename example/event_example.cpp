@@ -2,7 +2,8 @@
 
 #include <cstdio>
 
-int main() {
+int
+main() {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
     CIEL_DEFER(scheduler.unbind());
@@ -15,7 +16,7 @@ int main() {
     ctz::Event A = ctz::Event::any(il.begin(), il.end());
 
     ctz::schedule([=] {
-        A.wait();   // Wait for B or C's done
+        A.wait(); // Wait for B or C's done
         puts("A");
     });
 

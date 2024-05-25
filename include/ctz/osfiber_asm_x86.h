@@ -24,7 +24,7 @@ struct ctz_fiber_context {
     uintptr_t ESP;
     uintptr_t EIP;
 
-};  // struct ctz_fiber_context
+}; // struct ctz_fiber_context
 
 #ifdef __cplusplus
 #include <cstddef>

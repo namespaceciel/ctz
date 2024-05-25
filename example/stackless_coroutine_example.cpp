@@ -4,10 +4,11 @@
 class func {
 private:
     const std::string info = "Coroutine at level ";
-    size_t flag = 0;
+    size_t flag            = 0;
 
 public:
-    std::string operator()() noexcept {
+    std::string
+    operator()() noexcept {
         switch (flag) {
             case 0 :
                 return info + static_cast<char>('0' + flag++);
@@ -32,9 +33,10 @@ public:
         }
     }
 
-};  // struct func
+}; // struct func
 
-int main() {
+int
+main() {
     func f1;
     for (size_t i = 0; i < 3; ++i) {
         std::cout << f1() << '\n';

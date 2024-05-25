@@ -15,7 +15,8 @@ NAMESPACE_CTZ_BEGIN
 // T can be reference.
 template<class T>
 struct DAGRunContext {
-    DAGRunContext(T d) : data(d) {}
+    DAGRunContext(T d)
+        : data(d) {}
 
     // Every function parameter should be the same and stored here.
     T data;
@@ -25,34 +26,36 @@ struct DAGRunContext {
     std::unique_ptr<std::atomic<size_t>[]> counters;
 
     template<class F>
-    void invoke(F&& f) {
+    void
+    invoke(F&& f) {
         f(data);
     }
 
-};  // struct DAGRunContext
+}; // struct DAGRunContext
 
 template<>
 struct DAGRunContext<void> {
     std::unique_ptr<std::atomic<size_t>[]> counters;
 
     template<class F>
-    inline void invoke(F&& f) {
+    inline void
+    invoke(F&& f) {
         f();
     }
 
-};  // struct DAGRunContext<void>
+}; // struct DAGRunContext<void>
 
 template<class T>
 struct DAGWork {
     using type = std::function<void(T)>;
 
-};  // struct DAGWork
+}; // struct DAGWork
 
 template<>
 struct DAGWork<void> {
     using type = std::function<void()>;
 
-};  // struct DAGWork<void>
+}; // struct DAGWork<void>
 
 template<class>
 class DAGBuilder;
@@ -65,15 +68,19 @@ protected:
     friend class DAGBuilder<T>;
     friend class DAGNodeBuilder<T>;
 
-    using RunContext = DAGRunContext<T>;
-    using Work = typename DAGWork<T>::type;
+    using RunContext                            = DAGRunContext<T>;
+    using Work                                  = typename DAGWork<T>::type;
     static constexpr size_t InvalidCounterIndex = -1;
-    static constexpr size_t RootIndex = 0;
+    static constexpr size_t RootIndex           = 0;
 
     struct Node {
         Node() noexcept = default;
-        Node(Work&& w) noexcept : work(std::move(w)) {}
-        Node(const Work& w) : work(w) {}
+
+        Node(Work&& w) noexcept
+            : work(std::move(w)) {}
+
+        Node(const Work& w)
+            : work(w) {}
 
         Work work;
 
@@ -84,12 +91,13 @@ protected:
         // All downstream nodes' index.
         ciel::small_vector<size_t, 4> outs;
 
-    };  // struct Node
+    }; // struct Node
 
     // Transfer initialCounters to ctx->counters.
-    void initCounters(RunContext* ctx) {
+    void
+    initCounters(RunContext* ctx) {
         auto numCounters = initialCounters.size();
-        ctx->counters = std::unique_ptr<std::atomic<size_t>[]>(new std::atomic<size_t>[numCounters]);
+        ctx->counters    = std::unique_ptr<std::atomic<size_t>[]>(new std::atomic<size_t>[numCounters]);
 
         for (size_t i = 0; i < numCounters; ++i) {
             ctx->counters[i] = {initialCounters[i]};
@@ -98,7 +106,8 @@ protected:
 
     // Every time a task is completed, notify its downstream nodes,
     // decrement their dependency number, if becoming 0 return true.
-    CIEL_NODISCARD bool notify(RunContext* ctx, size_t nodeIdx) {
+    CIEL_NODISCARD bool
+    notify(RunContext* ctx, size_t nodeIdx) {
         Node* node = &nodes[nodeIdx];
 
         // Only have one dependency, steady go.
@@ -109,7 +118,8 @@ protected:
         return --ctx->counters[node->counterIndex] == 0;
     }
 
-    void invoke(RunContext* ctx, size_t nodeIdx, WaitGroup wg) {
+    void
+    invoke(RunContext* ctx, size_t nodeIdx, WaitGroup wg) {
         Node* node = &nodes[nodeIdx];
 
         // Run this node's work.
@@ -135,15 +145,16 @@ protected:
 
     ciel::small_vector<size_t, 32> initialCounters;
 
-};  // class DAGBase
+}; // class DAGBase
 
 template<class T = void>
 class DAG : public DAGBase<T> {
 public:
-    using Builder = DAGBuilder<T>;
+    using Builder     = DAGBuilder<T>;
     using NodeBuilder = DAGNodeBuilder<T>;
 
-    void run(T arg) {
+    void
+    run(T arg) {
         typename DAGBase<T>::RunContext ctx{arg};
         this->initCounters(&ctx);
         WaitGroup wg;
@@ -151,15 +162,16 @@ public:
         wg.wait();
     }
 
-};  // class DAG
+}; // class DAG
 
 template<>
 class DAG<void> : public DAGBase<void> {
 public:
-    using Builder = DAGBuilder<void>;
+    using Builder     = DAGBuilder<void>;
     using NodeBuilder = DAGNodeBuilder<void>;
 
-    void run() {
+    void
+    run() {
         typename DAGBase<void>::RunContext ctx{};
         this->initCounters(&ctx);
         WaitGroup wg;
@@ -167,13 +179,14 @@ public:
         wg.wait();
     }
 
-};  // class DAG<void>
+}; // class DAG<void>
 
 template<class T>
 class DAGNodeBuilder {
 public:
     template<class F>
-    DAGNodeBuilder then(F&& work) {
+    DAGNodeBuilder
+    then(F&& work) {
         auto node = builder->node(std::forward<F>(work));
         builder->addDependency(*this, node);
         return node;
@@ -182,35 +195,40 @@ public:
 private:
     friend class DAGBuilder<T>;
 
-    DAGNodeBuilder(DAGBuilder<T>* b, const size_t i) : builder(b), index(i) {}
-    
+    DAGNodeBuilder(DAGBuilder<T>* b, const size_t i)
+        : builder(b), index(i) {}
+
     DAGBuilder<T>* builder;
-    size_t index;   // Index of all nodes stored in DAGBase nodes.
-    
-};  // class DAGNodeBuilder
+    size_t index; // Index of all nodes stored in DAGBase nodes.
+
+}; // class DAGNodeBuilder
 
 template<class T>
 class DAGBuilder {
 public:
-    DAGBuilder() : dag(new DAG<T>) {
+    DAGBuilder()
+        : dag(new DAG<T>) {
         dag->nodes.emplace_back();
         numIns.emplace_back(0);
     }
 
-    DAGNodeBuilder<T> root() {
+    DAGNodeBuilder<T>
+    root() {
         return DAGNodeBuilder<T>{this, DAGBase<T>::RootIndex};
     }
 
     template<class F>
-    DAGNodeBuilder<T> node(F&& work) {
+    DAGNodeBuilder<T>
+    node(F&& work) {
         return node(std::forward<F>(work), {});
     }
 
     template<class F>
-    DAGNodeBuilder<T> node(F&& work, std::initializer_list<DAGNodeBuilder<T>> after) {
+    DAGNodeBuilder<T>
+    node(F&& work, std::initializer_list<DAGNodeBuilder<T>> after) {
         CTZ_ASSERT(numIns.size() == dag->nodes.size(), "DAGNodeBuilder vectors out of sync");
 
-        auto index = dag->nodes.size();     // index of this new node after emplace_back, size - 1 of course.
+        auto index = dag->nodes.size(); // index of this new node after emplace_back, size - 1 of course.
 
         numIns.emplace_back(0);
         dag->nodes.emplace_back(std::forward<F>(work));
@@ -224,13 +242,15 @@ public:
         return node;
     }
 
-    void addDependency(DAGNodeBuilder<T> parent, DAGNodeBuilder<T> child) {
+    void
+    addDependency(DAGNodeBuilder<T> parent, DAGNodeBuilder<T> child) {
         ++numIns[child.index];
         dag->nodes[parent.index].outs.emplace_back(child.index);
     }
 
     // This builder will be of invalid state after build().
-    CIEL_NODISCARD std::unique_ptr<DAG<T>> build() {
+    CIEL_NODISCARD std::unique_ptr<DAG<T>>
+    build() {
         auto numNodes = dag->nodes.size();
 
         CTZ_ASSERT(numIns.size() == dag->nodes.size(), "DAGNodeBuilder vectors out of sync");
@@ -239,7 +259,8 @@ public:
             if (numIns[i] > 1) {
                 auto& node = dag->nodes[i];
 
-                node.counterIndex = dag->initialCounters.size();    // index of this new node after emplace_back, size - 1 of course.
+                node.counterIndex
+                    = dag->initialCounters.size(); // index of this new node after emplace_back, size - 1 of course.
                 dag->initialCounters.push_back(numIns[i]);
             }
         }
@@ -251,7 +272,7 @@ private:
     std::unique_ptr<DAG<T>> dag;
     ciel::small_vector<size_t, 4> numIns;
 
-};  // class DAGBuilder
+}; // class DAGBuilder
 
 NAMESPACE_CTZ_END
 

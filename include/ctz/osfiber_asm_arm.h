@@ -1,27 +1,27 @@
 #ifndef CTZ_OSFIBER_ASM_ARM_H_
 #define CTZ_OSFIBER_ASM_ARM_H_
 
-#define CTZ_REG_r0 0x00
-#define CTZ_REG_r1 0x04
+#define CTZ_REG_r0  0x00
+#define CTZ_REG_r1  0x04
 #define CTZ_REG_r12 0x08
-#define CTZ_REG_r4 0x0c
-#define CTZ_REG_r5 0x10
-#define CTZ_REG_r6 0x14
-#define CTZ_REG_r7 0x18
-#define CTZ_REG_r8 0x1c
-#define CTZ_REG_r9 0x20
+#define CTZ_REG_r4  0x0c
+#define CTZ_REG_r5  0x10
+#define CTZ_REG_r6  0x14
+#define CTZ_REG_r7  0x18
+#define CTZ_REG_r8  0x1c
+#define CTZ_REG_r9  0x20
 #define CTZ_REG_r10 0x24
 #define CTZ_REG_r11 0x28
-#define CTZ_REG_v8 0x2c
-#define CTZ_REG_v9 0x30
+#define CTZ_REG_v8  0x2c
+#define CTZ_REG_v9  0x30
 #define CTZ_REG_v10 0x34
 #define CTZ_REG_v11 0x38
 #define CTZ_REG_v12 0x3c
 #define CTZ_REG_v13 0x40
 #define CTZ_REG_v14 0x44
 #define CTZ_REG_v15 0x48
-#define CTZ_REG_SP 0x4c
-#define CTZ_REG_LR 0x50
+#define CTZ_REG_SP  0x4c
+#define CTZ_REG_LR  0x50
 
 #ifndef CTZ_BUILD_ASM
 #include <stdint.h>
@@ -34,7 +34,7 @@ struct ctz_fiber_context {
     uintptr_t r1;
 
     // special purpose registers
-    uintptr_t r12;  // Intra-Procedure-call
+    uintptr_t r12; // Intra-Procedure-call
 
     // callee-saved registers
     uintptr_t r4;
@@ -55,10 +55,10 @@ struct ctz_fiber_context {
     uintptr_t v14;
     uintptr_t v15;
 
-    uintptr_t SP;  // stack pointer (r13)
-    uintptr_t LR;  // link register (r14)
+    uintptr_t SP; // stack pointer (r13)
+    uintptr_t LR; // link register (r14)
 
-};  // struct ctz_fiber_context
+}; // struct ctz_fiber_context
 
 #ifdef __cplusplus
 #include <cstddef>

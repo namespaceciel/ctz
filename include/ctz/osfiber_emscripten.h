@@ -3,9 +3,9 @@
 
 #ifndef CTZ_BUILD_WASM
 
-#include <cstdint>
-#include <cstddef>
 #include <array>
+#include <cstddef>
+#include <cstdint>
 #include <emscripten.h>
 #include <emscripten/fiber.h>
 
@@ -15,8 +15,8 @@ struct ctz_fiber_context {
     emscripten_fiber_t context;
     std::array</*std::byte*/ char, asyncify_stack_size> asyncify_stack;
 
-};  // struct ctz_fiber_context
+}; // struct ctz_fiber_context
 
-#endif  // CTZ_BUILD_ASM
+#endif // CTZ_BUILD_ASM
 
 #endif // CTZ_OSFIBER_ASM_EMSCRIPTEN_H_

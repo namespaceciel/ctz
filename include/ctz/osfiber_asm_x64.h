@@ -38,7 +38,7 @@ struct ctz_fiber_context {
     // stack and instruction registers
     uintptr_t RSP;
     uintptr_t RIP;
-};  // struct ctz_fiber_context
+}; // struct ctz_fiber_context
 
 #ifdef __cplusplus
 #include <cstddef>

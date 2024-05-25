@@ -3,15 +3,20 @@
 NAMESPACE_CTZ_BEGIN
 
 // Ticket
-Ticket::Ticket(TicketQueue* q) noexcept : queue(q) {}
+Ticket::Ticket(TicketQueue* q) noexcept
+    : queue(q) {}
 
-void Ticket::wait() {
+void
+Ticket::wait() {
     std::unique_lock<std::mutex> ul(mutex);
 
-    cv.wait(ul, [this] { return isReady; });
+    cv.wait(ul, [this] {
+        return isReady;
+    });
 }
 
-void Ticket::done() noexcept {
+void
+Ticket::done() noexcept {
     std::lock_guard<std::mutex> lg(queue->mutex);
 
     auto next = iter.next();
@@ -25,7 +30,8 @@ void Ticket::done() noexcept {
 }
 
 // TicketQueue
-CIEL_NODISCARD std::shared_ptr<Ticket> TicketQueue::take() {
+CIEL_NODISCARD std::shared_ptr<Ticket>
+TicketQueue::take() {
     std::lock_guard<std::mutex> lg(mutex);
 
     auto it = queue.insert(queue.end(), std::make_shared<Ticket>(this));

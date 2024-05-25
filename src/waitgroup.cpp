@@ -3,16 +3,20 @@
 NAMESPACE_CTZ_BEGIN
 
 // Data
-Data::Data(const size_t initialCount) noexcept : count(initialCount) {}
+Data::Data(const size_t initialCount) noexcept
+    : count(initialCount) {}
 
 // WaitGroup
-WaitGroup::WaitGroup(const size_t initialCount) : data(std::make_shared<Data>(initialCount)) {}
+WaitGroup::WaitGroup(const size_t initialCount)
+    : data(std::make_shared<Data>(initialCount)) {}
 
-void WaitGroup::add(const size_t num) const noexcept {
+void
+WaitGroup::add(const size_t num) const noexcept {
     data->count += num;
 }
 
-bool WaitGroup::done() const {
+bool
+WaitGroup::done() const {
     if (--data->count == 0) {
         std::unique_lock<std::mutex> ul(data->mutex);
 
@@ -23,10 +27,13 @@ bool WaitGroup::done() const {
     return false;
 }
 
-void WaitGroup::wait() const {
+void
+WaitGroup::wait() const {
     std::unique_lock<std::mutex> ul(data->mutex);
 
-    data->cv.wait(ul, [this] { return data->count == 0; });
+    data->cv.wait(ul, [this] {
+        return data->count == 0;
+    });
 }
 
 NAMESPACE_CTZ_END

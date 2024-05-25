@@ -2,7 +2,8 @@
 
 NAMESPACE_CTZ_BEGIN
 
-void ConditionVariable::notify_one() {
+void
+ConditionVariable::notify_one() {
     {
         std::lock_guard<std::mutex> lg(mutex);
 
@@ -17,7 +18,8 @@ void ConditionVariable::notify_one() {
     cv.notify_one();
 }
 
-void ConditionVariable::notify_all() {
+void
+ConditionVariable::notify_all() {
     {
         std::lock_guard<std::mutex> lg(mutex);
 

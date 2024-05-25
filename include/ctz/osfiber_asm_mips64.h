@@ -1,16 +1,16 @@
 #ifndef CTZ_OSFIBER_ASM_MIPS64_H_
 #define CTZ_OSFIBER_ASM_MIPS64_H_
 
-#define CTZ_REG_a0 0x00
-#define CTZ_REG_a1 0x08
-#define CTZ_REG_s0 0x10
-#define CTZ_REG_s1 0x18
-#define CTZ_REG_s2 0x20
-#define CTZ_REG_s3 0x28
-#define CTZ_REG_s4 0x30
-#define CTZ_REG_s5 0x38
-#define CTZ_REG_s6 0x40
-#define CTZ_REG_s7 0x48
+#define CTZ_REG_a0  0x00
+#define CTZ_REG_a1  0x08
+#define CTZ_REG_s0  0x10
+#define CTZ_REG_s1  0x18
+#define CTZ_REG_s2  0x20
+#define CTZ_REG_s3  0x28
+#define CTZ_REG_s4  0x30
+#define CTZ_REG_s5  0x38
+#define CTZ_REG_s6  0x40
+#define CTZ_REG_s7  0x48
 #define CTZ_REG_f24 0x50
 #define CTZ_REG_f25 0x58
 #define CTZ_REG_f26 0x60
@@ -19,10 +19,10 @@
 #define CTZ_REG_f29 0x78
 #define CTZ_REG_f30 0x80
 #define CTZ_REG_f31 0x88
-#define CTZ_REG_gp 0x90
-#define CTZ_REG_sp 0x98
-#define CTZ_REG_fp 0xa0
-#define CTZ_REG_ra 0xa8
+#define CTZ_REG_gp  0x90
+#define CTZ_REG_sp  0x98
+#define CTZ_REG_fp  0xa0
+#define CTZ_REG_ra  0xa8
 
 #if defined(__APPLE__)
 #define CTZ_ASM_SYMBOL(x) _##x
@@ -63,7 +63,7 @@ struct ctz_fiber_context {
     uintptr_t fp;
     uintptr_t ra;
 
-};  // struct ctz_fiber_context
+}; // struct ctz_fiber_context
 
 #ifdef __cplusplus
 #include <cstddef>

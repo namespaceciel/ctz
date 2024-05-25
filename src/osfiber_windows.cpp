@@ -14,30 +14,34 @@ OSFiber::~OSFiber() {
     }
 }
 
-CIEL_NODISCARD std::unique_ptr<OSFiber> OSFiber::createFiberFromCurrentThread() {
+CIEL_NODISCARD std::unique_ptr<OSFiber>
+OSFiber::createFiberFromCurrentThread() {
     auto out = std::unique_ptr<OSFiber>(new OSFiber);
 
-    out->fiber = ConvertThreadToFiberEx(nullptr, FIBER_FLAG_FLOAT_SWITCH);
+    out->fiber             = ConvertThreadToFiberEx(nullptr, FIBER_FLAG_FLOAT_SWITCH);
     out->isFiberFromThread = true;
     CTZ_ASSERT(out->fiber != nullptr, "ConvertThreadToFiberEx() failed with error 0x%x", int(GetLastError()));
     return out;
 }
 
-CIEL_NODISCARD std::unique_ptr<OSFiber> OSFiber::createFiber(const size_t stackSize, std::function<void()>&& func) {
+CIEL_NODISCARD std::unique_ptr<OSFiber>
+OSFiber::createFiber(const size_t stackSize, std::function<void()>&& func) {
     auto out = std::unique_ptr<OSFiber>(new OSFiber);
 
     // stackSize is rounded up to the system's allocation granularity (typically 64 KB).
-    out->fiber = CreateFiberEx(stackSize - 1, stackSize, FIBER_FLAG_FLOAT_SWITCH, &OSFiber::run, out.get());
+    out->fiber  = CreateFiberEx(stackSize - 1, stackSize, FIBER_FLAG_FLOAT_SWITCH, &OSFiber::run, out.get());
     out->target = std::move(func);
     CTZ_ASSERT(out->fiber != nullptr, "CreateFiberEx() failed with error 0x%x", int(GetLastError()));
     return out;
 }
 
-void OSFiber::switchTo(OSFiber* to) {
+void
+OSFiber::switchTo(OSFiber* to) {
     SwitchToFiber(to->fiber);
 }
 
-void WINAPI OSFiber::run(void* self) {
+void WINAPI
+OSFiber::run(void* self) {
     std::function<void()> func;
     std::swap(func, reinterpret_cast<OSFiber*>(self)->target);
     func();

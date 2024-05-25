@@ -50,8 +50,8 @@ TEST(EventTest, EventAutoWait) {
     CIEL_DEFER(scheduler.unbind());
 
     std::atomic<int> counter = {0};
-    auto event = ctz::Event(ctz::Event::Mode::Auto);
-    auto done = ctz::Event(ctz::Event::Mode::Auto);
+    auto event               = ctz::Event(ctz::Event::Mode::Auto);
+    auto done                = ctz::Event(ctz::Event::Mode::Auto);
 
     for (int i = 0; i < 3; ++i) {
         ctz::schedule([=, &counter] {
@@ -82,8 +82,8 @@ TEST(EventTest, EventManualWait) {
     CIEL_DEFER(scheduler.unbind());
 
     std::atomic<int> counter = {0};
-    auto event = ctz::Event(ctz::Event::Mode::Manual);
-    auto wg = ctz::WaitGroup(3);
+    auto event               = ctz::Event(ctz::Event::Mode::Manual);
+    auto wg                  = ctz::WaitGroup(3);
 
     for (int i = 0; i < 3; ++i) {
         ctz::schedule([=, &counter] {
@@ -108,7 +108,7 @@ TEST(EventTest, EventSequence) {
         auto eventA = ctz::Event(mode);
         auto eventB = ctz::Event(mode);
         auto eventC = ctz::Event(mode);
-        auto done = ctz::Event(mode);
+        auto done   = ctz::Event(mode);
 
         ctz::schedule([=, &sequence] {
             eventA.wait();
@@ -138,7 +138,6 @@ TEST(EventTest, EventSequence) {
 
 TEST(EventTest, EventAny) {
     for (int i = 0; i < 3; ++i) {
-
         std::array<ctz::Event, 3> events = {
             ctz::Event(ctz::Event::Mode::Auto),
             ctz::Event(ctz::Event::Mode::Auto),

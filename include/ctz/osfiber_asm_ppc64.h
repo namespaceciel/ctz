@@ -1,8 +1,8 @@
 #ifndef CTZ_OSFIBER_ASM_PPC64_H_
 #define CTZ_OSFIBER_ASM_PPC64_H_
 
-#define CTZ_REG_R1 0x00
-#define CTZ_REG_R2 0x08
+#define CTZ_REG_R1  0x00
+#define CTZ_REG_R2  0x08
 #define CTZ_REG_R13 0x10
 #define CTZ_REG_R14 0x18
 #define CTZ_REG_R15 0x20
@@ -26,7 +26,7 @@
 #define CTZ_REG_R3 0xa8
 #define CTZ_REG_R4 0xb0
 
-#define CTZ_REG_LR 0xb8
+#define CTZ_REG_LR  0xb8
 #define CTZ_REG_CCR 0xc0
 
 #define CTZ_REG_FPR14 0xc8
@@ -49,7 +49,7 @@
 #define CTZ_REG_FPR31 0x150
 
 #define CTZ_REG_VRSAVE 0x158
-#define CTZ_REG_VMX 0x160
+#define CTZ_REG_VMX    0x160
 
 #ifndef CTZ_BUILD_ASM
 
@@ -111,7 +111,7 @@ struct ctz_fiber_context {
     uint32_t vrsave;
     uintptr_t vmx[12 * 2];
 
-};  // struct ctz_fiber_context
+}; // struct ctz_fiber_context
 
 #ifdef __cplusplus
 #include <cstddef>

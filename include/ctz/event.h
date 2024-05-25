@@ -14,27 +14,34 @@ NAMESPACE_CTZ_BEGIN
 class Event {
 public:
     enum class Mode : uint8_t {
-        Auto, Manual
+        Auto,
+        Manual
 
-    };  // enum class Mode
+    }; // enum class Mode
 
     Event(Mode = Mode::Auto, bool = false);
 
-    void signal() const;
+    void
+    signal() const;
 
-    void clear() const;
+    void
+    clear() const;
 
-    void wait() const;
+    void
+    wait() const;
 
     // Return true if the event is signaled.
     // In auto mode, test() will clear the state, while isSignalled won't.
-    CIEL_NODISCARD bool test() const noexcept;
-    CIEL_NODISCARD bool isSignalled() const noexcept;
+    CIEL_NODISCARD bool
+    test() const noexcept;
+    CIEL_NODISCARD bool
+    isSignalled() const noexcept;
 
     // Construct a new Event, insert it into each one of the ranges' deps.
     // When one of them is signaled, this new Event will be signaled too.
     template<class Iter>
-    CIEL_NODISCARD static Event any(Mode mode, Iter begin, Iter end) {
+    CIEL_NODISCARD static Event
+    any(Mode mode, Iter begin, Iter end) {
         Event any(mode, false);
 
         for (auto it = begin; it != end; ++it) {
@@ -53,7 +60,8 @@ public:
     }
 
     template<class Iter>
-    CIEL_NODISCARD static Event any(Iter begin, Iter end) {
+    CIEL_NODISCARD static Event
+    any(Iter begin, Iter end) {
         return any(Mode::Auto, begin, end);
     }
 
@@ -61,9 +69,11 @@ private:
     struct Shared {
         Shared(Mode, bool) noexcept;
 
-        void signal();
+        void
+        signal();
 
-        void wait();
+        void
+        wait();
 
         ciel::small_vector<std::shared_ptr<Shared>, 1> deps;
         ConditionVariable cv;
@@ -71,11 +81,11 @@ private:
         const Mode mode;
         bool signalled;
 
-    };  // struct Shared
+    }; // struct Shared
 
     const std::shared_ptr<Shared> shared;
 
-};  // class Event
+}; // class Event
 
 NAMESPACE_CTZ_END
 

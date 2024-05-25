@@ -17,10 +17,12 @@ class Ticket {
 public:
     Ticket(TicketQueue*) noexcept;
 
-    void wait();
+    void
+    wait();
 
     // Make sure isDone = true and next node (if exist) isReady = true won't be disrupted.
-    void done() noexcept;
+    void
+    done() noexcept;
 
 private:
     friend class TicketQueue;
@@ -31,11 +33,12 @@ private:
     TicketQueue* const queue;
     bool isReady{false};
 
-};  // class Ticket
+}; // class Ticket
 
 class TicketQueue {
 public:
-    CIEL_NODISCARD std::shared_ptr<Ticket> take();
+    CIEL_NODISCARD std::shared_ptr<Ticket>
+    take();
 
 private:
     friend class Ticket;
@@ -43,7 +46,7 @@ private:
     ciel::list<std::shared_ptr<Ticket>> queue;
     std::mutex mutex;
 
-};  // class TicketQueue
+}; // class TicketQueue
 
 NAMESPACE_CTZ_END
 

@@ -10,16 +10,17 @@ struct Data {
     std::mutex mutex;
     std::vector<std::string> order;
 
-    void push(std::string&& s) {
+    void
+    push(std::string&& s) {
         std::lock_guard<std::mutex> lg(mutex);
         order.emplace_back(std::move(s));
     }
 
-};  // struct Data
+}; // struct Data
 
-}  // namespace
+} // namespace
 
-//  [A] --> [B] --> [C]
+// [A] --> [B] --> [C]
 TEST(DAGTest, DAGChainNoArg) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
@@ -29,9 +30,15 @@ TEST(DAGTest, DAGChainNoArg) {
 
     Data data;
     builder.root()
-        .then([&] { data.push("A"); })
-        .then([&] { data.push("B"); })
-        .then([&] { data.push("C"); });
+        .then([&] {
+            data.push("A");
+        })
+        .then([&] {
+            data.push("B");
+        })
+        .then([&] {
+            data.push("C");
+        });
 
     auto dag = builder.build();
     dag->run();
@@ -39,7 +46,7 @@ TEST(DAGTest, DAGChainNoArg) {
     ASSERT_EQ(data.order, std::vector<std::string>({"A", "B", "C"}));
 }
 
-//  [A] --> [B] --> [C]
+// [A] --> [B] --> [C]
 TEST(DAGTest, DAGChain) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
@@ -48,9 +55,15 @@ TEST(DAGTest, DAGChain) {
     ctz::DAG<Data&>::Builder builder;
 
     builder.root()
-        .then([](Data& data) { data.push("A"); })
-        .then([](Data& data) { data.push("B"); })
-        .then([](Data& data) { data.push("C"); });
+        .then([](Data& data) {
+            data.push("A");
+        })
+        .then([](Data& data) {
+            data.push("B");
+        })
+        .then([](Data& data) {
+            data.push("C");
+        });
 
     auto dag = builder.build();
 
@@ -60,7 +73,7 @@ TEST(DAGTest, DAGChain) {
     ASSERT_EQ(data.order, std::vector<std::string>({"A", "B", "C"}));
 }
 
-//  [A] --> [B] --> [C]
+// [A] --> [B] --> [C]
 TEST(DAGTest, DAGRunRepeat) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
@@ -69,9 +82,15 @@ TEST(DAGTest, DAGRunRepeat) {
     ctz::DAG<Data&>::Builder builder;
 
     builder.root()
-        .then([](Data& data) { data.push("A"); })
-        .then([](Data& data) { data.push("B"); })
-        .then([](Data& data) { data.push("C"); });
+        .then([](Data& data) {
+            data.push("A");
+        })
+        .then([](Data& data) {
+            data.push("B");
+        })
+        .then([](Data& data) {
+            data.push("C");
+        });
 
     auto dag = builder.build();
 
@@ -97,9 +116,15 @@ TEST(DAGTest, DAGFanOutFromRoot) {
     ctz::DAG<Data&>::Builder builder;
 
     auto root = builder.root();
-    root.then([](Data& data) { data.push("A"); });
-    root.then([](Data& data) { data.push("B"); });
-    root.then([](Data& data) { data.push("C"); });
+    root.then([](Data& data) {
+        data.push("A");
+    });
+    root.then([](Data& data) {
+        data.push("B");
+    });
+    root.then([](Data& data) {
+        data.push("C");
+    });
 
     auto dag = builder.build();
 
@@ -123,10 +148,18 @@ TEST(DAGTest, DAGFanOutFromNonRoot) {
     ctz::DAG<Data&>::Builder builder;
 
     auto root = builder.root();
-    auto node = root.then([](Data& data) { data.push("N"); });
-    node.then([](Data& data) { data.push("A"); });
-    node.then([](Data& data) { data.push("B"); });
-    node.then([](Data& data) { data.push("C"); });
+    auto node = root.then([](Data& data) {
+        data.push("N");
+    });
+    node.then([](Data& data) {
+        data.push("A");
+    });
+    node.then([](Data& data) {
+        data.push("B");
+    });
+    node.then([](Data& data) {
+        data.push("C");
+    });
 
     auto dag = builder.build();
 
@@ -152,23 +185,53 @@ TEST(DAGTest, DAGFanOutFanIn) {
     ctz::DAG<Data&>::Builder builder;
 
     auto root = builder.root();
-    auto a0 = root.then([](Data& data) { data.push("A0"); });
-    auto a1 = root.then([](Data& data) { data.push("A1"); });
+    auto a0   = root.then([](Data& data) {
+        data.push("A0");
+    });
+    auto a1   = root.then([](Data& data) {
+        data.push("A1");
+    });
 
-    auto b = builder.node([](Data& data) { data.push("B"); }, {a0, a1});
+    auto b = builder.node(
+        [](Data& data) {
+            data.push("B");
+        },
+        {a0, a1});
 
-    auto c0 = b.then([](Data& data) { data.push("C0"); });
-    auto c1 = b.then([](Data& data) { data.push("C1"); });
-    auto c2 = b.then([](Data& data) { data.push("C2"); });
+    auto c0 = b.then([](Data& data) {
+        data.push("C0");
+    });
+    auto c1 = b.then([](Data& data) {
+        data.push("C1");
+    });
+    auto c2 = b.then([](Data& data) {
+        data.push("C2");
+    });
 
-    auto d = builder.node([](Data& data) { data.push("D"); }, {c0, c1, c2});
+    auto d = builder.node(
+        [](Data& data) {
+            data.push("D");
+        },
+        {c0, c1, c2});
 
-    auto e0 = d.then([](Data& data) { data.push("E0"); });
-    auto e1 = d.then([](Data& data) { data.push("E1"); });
-    auto e2 = d.then([](Data& data) { data.push("E2"); });
-    auto e3 = d.then([](Data& data) { data.push("E3"); });
+    auto e0 = d.then([](Data& data) {
+        data.push("E0");
+    });
+    auto e1 = d.then([](Data& data) {
+        data.push("E1");
+    });
+    auto e2 = d.then([](Data& data) {
+        data.push("E2");
+    });
+    auto e3 = d.then([](Data& data) {
+        data.push("E3");
+    });
 
-    builder.node([](Data& data) { data.push("F"); }, {e0, e1, e2, e3});
+    builder.node(
+        [](Data& data) {
+            data.push("F");
+        },
+        {e0, e1, e2, e3});
 
     auto dag = builder.build();
 
@@ -187,7 +250,8 @@ TEST(DAGTest, DAGFanOutFanIn) {
 
     ASSERT_EQ(data.order[6], "D");
 
-    ASSERT_TRUE(std::is_permutation(data.order.begin() + 7, data.order.begin() + 11, tmp.begin() + 7, tmp.begin() + 11));
+    ASSERT_TRUE(
+        std::is_permutation(data.order.begin() + 7, data.order.begin() + 11, tmp.begin() + 7, tmp.begin() + 11));
 
     ASSERT_EQ(data.order[11], "F");
 }
@@ -198,9 +262,7 @@ TEST(DAGTest, DAGForwardFunc) {
     std::function<void()> func([] {});
     ASSERT_TRUE(func);
 
-    auto a = builder.root()
-                 .then(func)
-                 .then(func);
+    auto a = builder.root().then(func).then(func);
 
     builder.node(func, {a});
 

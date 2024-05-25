@@ -5,16 +5,19 @@ NAMESPACE_CTZ_BEGIN
 Scheduler* Scheduler::bound = nullptr;
 
 // SchedulerConfig
-CIEL_NODISCARD SchedulerConfig SchedulerConfig::allCores() noexcept {
+CIEL_NODISCARD SchedulerConfig
+SchedulerConfig::allCores() noexcept {
     return SchedulerConfig().setWorkerThreadCount(numLogicalCPUs());
 }
 
-SchedulerConfig& SchedulerConfig::setFiberStackSize(const size_t size) noexcept {
+SchedulerConfig&
+SchedulerConfig::setFiberStackSize(const size_t size) noexcept {
     fiberStackSize = size;
     return *this;
 }
 
-SchedulerConfig& SchedulerConfig::setWorkerThreadCount(const size_t count) noexcept {
+SchedulerConfig&
+SchedulerConfig::setWorkerThreadCount(const size_t count) noexcept {
     threadCount = count;
     return *this;
 }
@@ -23,7 +26,8 @@ SchedulerConfig& SchedulerConfig::setWorkerThreadCount(const size_t count) noexc
 Scheduler::Scheduler(const SchedulerConfig& cfg) noexcept
     : config(cfg) {}
 
-void Scheduler::bind() noexcept {
+void
+Scheduler::bind() noexcept {
     setBound(this);
 
     workers.reserve(config.threadCount);
@@ -37,15 +41,18 @@ void Scheduler::bind() noexcept {
     }
 }
 
-void Scheduler::setBound(Scheduler* scheduler) noexcept {
+void
+Scheduler::setBound(Scheduler* scheduler) noexcept {
     bound = scheduler;
 }
 
-CIEL_NODISCARD Scheduler* Scheduler::get() noexcept {
+CIEL_NODISCARD Scheduler*
+Scheduler::get() noexcept {
     return bound;
 }
 
-void Scheduler::unbind() noexcept {
+void
+Scheduler::unbind() noexcept {
     CTZ_ASSERT(get() == this, "unbind a scheduler that's not yours");
     CTZ_ASSERT(get() != nullptr, "no scheduler bound");
 
@@ -60,7 +67,8 @@ void Scheduler::unbind() noexcept {
     setBound(nullptr);
 }
 
-void Scheduler::enqueue(const std::function<void()>& newTask) {
+void
+Scheduler::enqueue(const std::function<void()>& newTask) {
     CTZ_ASSERT(!workers.empty(), "Scheduler::enqueue on empty scheduler");
 
     ++workNum;
@@ -68,7 +76,8 @@ void Scheduler::enqueue(const std::function<void()>& newTask) {
     workers[index++ % workers.size()]->enqueue(newTask);
 }
 
-void Scheduler::enqueue(std::function<void()>&& newTask) {
+void
+Scheduler::enqueue(std::function<void()>&& newTask) {
     CTZ_ASSERT(!workers.empty(), "Scheduler::enqueue on empty scheduler");
 
     ++workNum;

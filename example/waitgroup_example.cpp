@@ -2,25 +2,26 @@
 
 #include <cstdio>
 
-int main() {
+int
+main() {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
     CIEL_DEFER(scheduler.unbind());
 
-    //   __________________________________________________________
-    //  |                                                          |
-    //  |               ---> [task B] ----                         |
-    //  |             /                    \                       |
-    //  |  [task A] -----> [task A: wait] -----> [task A: resume]  |
-    //  |             \                    /                       |
-    //  |               ---> [task C] ----                         |
-    //  |__________________________________________________________|
+    // __________________________________________________________
+    // |                                                          |
+    // |               ---> [task B] ----                         |
+    // |             /                    \                       |
+    // |  [task A] -----> [task A: wait] -----> [task A: resume]  |
+    // |             \                    /                       |
+    // |               ---> [task C] ----                         |
+    // |__________________________________________________________|
 
     ctz::WaitGroup a_wg(1);
 
     // task A
     ctz::schedule([=] {
-        CIEL_DEFER(a_wg.done());  // Decrement a_wg when task A is done
+        CIEL_DEFER(a_wg.done()); // Decrement a_wg when task A is done
 
         puts("1");
 
@@ -29,7 +30,7 @@ int main() {
         ctz::WaitGroup bc_wg(2);
 
         // task B
-        ctz::schedule([=] {     // schedule inside Scheduler, the reason to use Scheduler::bind()
+        ctz::schedule([=] { // schedule inside Scheduler, the reason to use Scheduler::bind()
             CIEL_DEFER(bc_wg.done());
             puts("2");
         });

@@ -6,7 +6,8 @@ NAMESPACE_CTZ_BEGIN
 Event::Shared::Shared(const Mode m, const bool initialState) noexcept
     : mode(m), signalled(initialState) {}
 
-void Event::Shared::signal() {
+void
+Event::Shared::signal() {
     std::lock_guard<std::mutex> lg(mutex);
 
     if (signalled) {
@@ -26,10 +27,13 @@ void Event::Shared::signal() {
     }
 }
 
-void Event::Shared::wait() {
+void
+Event::Shared::wait() {
     std::unique_lock<std::mutex> ul(mutex);
 
-    cv.wait(ul, [&] { return signalled; });
+    cv.wait(ul, [&] {
+        return signalled;
+    });
 
     if (mode == Mode::Auto) {
         signalled = false;
@@ -40,20 +44,24 @@ void Event::Shared::wait() {
 Event::Event(const Mode mode, const bool initialState)
     : shared(std::make_shared<Shared>(mode, initialState)) {}
 
-void Event::signal() const {
+void
+Event::signal() const {
     shared->signal();
 }
 
-void Event::clear() const {
+void
+Event::clear() const {
     std::lock_guard<std::mutex> lg(shared->mutex);
     shared->signalled = false;
 }
 
-void Event::wait() const {
+void
+Event::wait() const {
     shared->wait();
 }
 
-CIEL_NODISCARD bool Event::test() const noexcept {
+CIEL_NODISCARD bool
+Event::test() const noexcept {
     std::lock_guard<std::mutex> lg(shared->mutex);
 
     if (!shared->signalled) {
@@ -66,7 +74,8 @@ CIEL_NODISCARD bool Event::test() const noexcept {
     return true;
 }
 
-CIEL_NODISCARD bool Event::isSignalled() const noexcept {
+CIEL_NODISCARD bool
+Event::isSignalled() const noexcept {
     std::lock_guard<std::mutex> lg(shared->mutex);
     return shared->signalled;
 }

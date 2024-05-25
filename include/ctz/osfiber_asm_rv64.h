@@ -1,34 +1,34 @@
 #ifndef CTZ_OSFIBER_ASM_RV64_H_
 #define CTZ_OSFIBER_ASM_RV64_H_
 
-#define CTZ_REG_a0 0x00
-#define CTZ_REG_a1 0x08
-#define CTZ_REG_s0 0x10
-#define CTZ_REG_s1 0x18
-#define CTZ_REG_s2 0x20
-#define CTZ_REG_s3 0x28
-#define CTZ_REG_s4 0x30
-#define CTZ_REG_s5 0x38
-#define CTZ_REG_s6 0x40
-#define CTZ_REG_s7 0x48
-#define CTZ_REG_s8 0x50
-#define CTZ_REG_s9 0x58
-#define CTZ_REG_s10 0x60
-#define CTZ_REG_s11 0x68
-#define CTZ_REG_fs0 0x70
-#define CTZ_REG_fs1 0x78
-#define CTZ_REG_fs2 0x80
-#define CTZ_REG_fs3 0x88
-#define CTZ_REG_fs4 0x90
-#define CTZ_REG_fs5 0x98
-#define CTZ_REG_fs6 0xa0
-#define CTZ_REG_fs7 0xa8
-#define CTZ_REG_fs8 0xb0
-#define CTZ_REG_fs9 0xb8
+#define CTZ_REG_a0   0x00
+#define CTZ_REG_a1   0x08
+#define CTZ_REG_s0   0x10
+#define CTZ_REG_s1   0x18
+#define CTZ_REG_s2   0x20
+#define CTZ_REG_s3   0x28
+#define CTZ_REG_s4   0x30
+#define CTZ_REG_s5   0x38
+#define CTZ_REG_s6   0x40
+#define CTZ_REG_s7   0x48
+#define CTZ_REG_s8   0x50
+#define CTZ_REG_s9   0x58
+#define CTZ_REG_s10  0x60
+#define CTZ_REG_s11  0x68
+#define CTZ_REG_fs0  0x70
+#define CTZ_REG_fs1  0x78
+#define CTZ_REG_fs2  0x80
+#define CTZ_REG_fs3  0x88
+#define CTZ_REG_fs4  0x90
+#define CTZ_REG_fs5  0x98
+#define CTZ_REG_fs6  0xa0
+#define CTZ_REG_fs7  0xa8
+#define CTZ_REG_fs8  0xb0
+#define CTZ_REG_fs9  0xb8
 #define CTZ_REG_fs10 0xc0
 #define CTZ_REG_fs11 0xc8
-#define CTZ_REG_sp 0xd0
-#define CTZ_REG_ra 0xd8
+#define CTZ_REG_sp   0xd0
+#define CTZ_REG_ra   0xd8
 
 #ifndef CTZ_BUILD_ASM
 
@@ -69,7 +69,7 @@ struct ctz_fiber_context {
     uintptr_t sp;
     uintptr_t ra;
 
-};  // struct ctz_fiber_context
+}; // struct ctz_fiber_context
 
 #ifdef __cplusplus
 #include <cstddef>
