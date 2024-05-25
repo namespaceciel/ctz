@@ -2,13 +2,17 @@
 
 NAMESPACE_CTZ_BEGIN
 
+thread_local Fiber* Fiber::current = nullptr;
+
 Fiber::Fiber(Worker* w, std::unique_ptr<OSFiber>&& i)
     : worker(w), impl(std::move(i)) {}
 
 void
 Fiber::switchTo(Fiber* to) {
+    CTZ_ASSERT(this == Fiber::current, "The Fiber calling Fiber::switchTo() is not running");
     CTZ_ASSERT(this != to, "Fiber::switchTo() the same Fiber");
 
+    Fiber::current = to;
     impl->switchTo(to->impl.get());
 }
 

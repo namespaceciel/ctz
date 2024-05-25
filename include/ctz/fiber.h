@@ -46,6 +46,8 @@ private:
 
     Fiber(Worker*, std::unique_ptr<OSFiber>&&);
 
+    static thread_local Fiber* current;
+
     const std::unique_ptr<OSFiber> impl;
 
 }; // class Fiber

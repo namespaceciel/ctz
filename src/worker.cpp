@@ -58,8 +58,9 @@ Worker::start() {
     thread = std::thread([this] {
         current = this; // bind thread_local worker* to this thread
 
-        mainFiber    = Fiber::createFromCurrentThread(this),
-        currentFiber = Fiber::create(this, scheduler->config.fiberStackSize, [this] {
+        mainFiber      = Fiber::createFromCurrentThread(this);
+        Fiber::current = mainFiber.get();
+        currentFiber   = Fiber::create(this, scheduler->config.fiberStackSize, [this] {
             run();
         });
 
