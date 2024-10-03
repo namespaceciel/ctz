@@ -55,12 +55,10 @@ public:
 
     Scheduler(const Scheduler&) = delete;
     Scheduler(Scheduler&&)      = delete;
-    Scheduler&
-    operator=(const Scheduler&)
-        = delete;
-    Scheduler&
-    operator=(Scheduler&&)
-        = delete;
+    // clang-format off
+    Scheduler& operator=(const Scheduler&) = delete;
+    Scheduler& operator=(Scheduler&&)      = delete;
+    // clang-format on
 
     static Scheduler* bound;
 

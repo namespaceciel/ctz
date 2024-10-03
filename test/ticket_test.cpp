@@ -5,7 +5,7 @@
 TEST(TicketTest, all) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::TicketQueue queue;
 

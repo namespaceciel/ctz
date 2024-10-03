@@ -6,7 +6,7 @@ int
 main() {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::Event B;
     ctz::Event C;
@@ -21,12 +21,12 @@ main() {
     });
 
     ctz::schedule([=] {
-        CIEL_DEFER(B.signal());
+        CIEL_DEFER({ B.signal(); });
         puts("B");
     });
 
     ctz::schedule([=] {
-        CIEL_DEFER(C.signal());
+        CIEL_DEFER({ C.signal(); });
         puts("C");
     });
 }

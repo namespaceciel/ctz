@@ -34,7 +34,7 @@ TEST(SchedulerTest, SingleThreadCounter) {
     {
         ctz::Scheduler scheduler(ctz::SchedulerConfig().setWorkerThreadCount(1));
         scheduler.bind();
-        CIEL_DEFER(scheduler.unbind());
+        CIEL_DEFER({ scheduler.unbind(); });
 
         for (int i = 0; i < 1000; ++i) {
             ctz::schedule([&] {
@@ -52,7 +52,7 @@ TEST(SchedulerTest, MultipleThreadCounter) {
     {
         ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
         scheduler.bind();
-        CIEL_DEFER(scheduler.unbind());
+        CIEL_DEFER({ scheduler.unbind(); });
 
         for (int i = 0; i < 1000; ++i) {
             ctz::schedule([&] {
@@ -70,7 +70,7 @@ TEST(SchedulerTest, TasksInTasks) {
     {
         ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
         scheduler.bind();
-        CIEL_DEFER(scheduler.unbind());
+        CIEL_DEFER({ scheduler.unbind(); });
 
         for (int i = 0; i < 500; ++i) {
             ctz::schedule([&] {

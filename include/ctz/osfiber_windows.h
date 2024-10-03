@@ -28,12 +28,10 @@ public:
 
     OSFiber(const OSFiber&) = delete;
     OSFiber(OSFiber&&)      = delete;
-    OSFiber&
-    operator=(const OSFiber&)
-        = delete;
-    OSFiber&
-    operator=(OSFiber&&)
-        = delete;
+    // clang-format off
+    OSFiber& operator=(const OSFiber&) = delete;
+    OSFiber& operator=(OSFiber&&)      = delete;
+    // clang-format on
 
 private:
     friend class Fiber;

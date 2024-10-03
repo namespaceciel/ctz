@@ -6,7 +6,7 @@
 TEST(WaitGroupTest, WaitGroup_OneTask) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::WaitGroup wg(1);
     std::atomic<size_t> counter = {0};
@@ -24,7 +24,7 @@ TEST(WaitGroupTest, WaitGroup_OneTask) {
 TEST(WaitGroupTest, WaitGroup_10Tasks) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::WaitGroup wg(10);
     std::atomic<size_t> counter = {0};
@@ -47,7 +47,7 @@ TEST(WaitGroupTest, NotifyAsTask) {
     {
         ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
         scheduler.bind();
-        CIEL_DEFER(scheduler.unbind());
+        CIEL_DEFER({ scheduler.unbind(); });
 
         ctz::WaitGroup wg(1);
 
@@ -72,7 +72,7 @@ TEST(WaitGroupTest, NotifyAsTask2) {
     {
         ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
         scheduler.bind();
-        CIEL_DEFER(scheduler.unbind());
+        CIEL_DEFER({ scheduler.unbind(); });
 
         ctz::WaitGroup wg(1);
 
@@ -95,7 +95,7 @@ TEST(WaitGroupTest, NotifyAsTask2) {
 TEST(WaitGroupTest, SameThread) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::WaitGroup fence(1);
     ctz::WaitGroup wg(1000);

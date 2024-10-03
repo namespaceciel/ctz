@@ -47,7 +47,7 @@ TEST(EventTest, EventManualTest) {
 TEST(EventTest, EventAutoWait) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     std::atomic<int> counter = {0};
     auto event               = ctz::Event(ctz::Event::Mode::Auto);
@@ -79,7 +79,7 @@ TEST(EventTest, EventAutoWait) {
 TEST(EventTest, EventManualWait) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     std::atomic<int> counter = {0};
     auto event               = ctz::Event(ctz::Event::Mode::Manual);
@@ -101,7 +101,7 @@ TEST(EventTest, EventManualWait) {
 TEST(EventTest, EventSequence) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     for (auto mode : {ctz::Event::Mode::Manual, ctz::Event::Mode::Auto}) {
         std::string sequence;

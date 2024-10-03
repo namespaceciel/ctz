@@ -53,12 +53,10 @@ public:
 
     ConditionVariable(const ConditionVariable&) = delete;
     ConditionVariable(ConditionVariable&&)      = delete;
-    ConditionVariable&
-    operator=(const ConditionVariable&)
-        = delete;
-    ConditionVariable&
-    operator=(ConditionVariable&&)
-        = delete;
+    // clang-format off
+    ConditionVariable& operator=(const ConditionVariable&) = delete;
+    ConditionVariable& operator=(ConditionVariable&&)      = delete;
+    // clang-format on
 
 private:
     std::vector<std::unique_ptr<Fiber>> waitingTasks;

@@ -25,12 +25,10 @@ public:
 
     Fiber(const Fiber&) = delete;
     Fiber(Fiber&&)      = delete;
-    Fiber&
-    operator=(const Fiber&)
-        = delete;
-    Fiber&
-    operator=(Fiber&&)
-        = delete;
+    // clang-format off
+    Fiber& operator=(const Fiber&) = delete;
+    Fiber& operator=(Fiber&&)      = delete;
+    // clang-format on
 
     Worker* const worker;
 

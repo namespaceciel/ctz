@@ -24,7 +24,7 @@ main() {
 
     // CIEL_DEFER wrap the expression into a lambda, storing it to ciel::finally,
     // when it reaches out of scope, the destructor of ciel::finally will call that expression earlier.
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::TicketQueue queue;
 

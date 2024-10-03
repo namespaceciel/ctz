@@ -26,7 +26,7 @@ int main() {
 
     // CIEL_DEFER 将语句包装进一个 lambda，并存入一个 ciel::finally 对象，
     // 该对象在离开作用域时，析构函数会执行之前存入的语句（简易的 RAII）
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::TicketQueue queue;
 
@@ -76,7 +76,7 @@ A 先打印 1，B、C 分别打印 2、3，A 最后打印 4。结果应为 1234 
 int main() {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     //   __________________________________________________________
     //  |                                                          |
@@ -93,7 +93,7 @@ int main() {
 
     // 任务 A
     ctz::schedule([&str, a_wg] {
-        CIEL_DEFER(a_wg.done());
+        CIEL_DEFER({ a_wg.done(); });
 
         puts("1");
 
@@ -102,13 +102,13 @@ int main() {
 
         // 任务 B
         ctz::schedule([&str, bc_wg] {     // 在任务中调度任务，这是 Scheduler::bind 到全局的意义
-            CIEL_DEFER(bc_wg.done());
+            CIEL_DEFER({ bc_wg.done(); });
             puts("2");
         });
 
         // 任务 C
         ctz::schedule([&str, bc_wg] {
-            CIEL_DEFER(bc_wg.done());
+            CIEL_DEFER({ bc_wg.done(); });
             puts("3");
         });
 
@@ -135,7 +135,7 @@ A、B、C 分别打印自己，结果应为 BAC BCA CAB CBA 中任意一种。
 int main() {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::Event B;
     ctz::Event C;
@@ -150,12 +150,12 @@ int main() {
     });
 
     ctz::schedule([=] {
-        CIEL_DEFER(B.signal());
+        CIEL_DEFER({ B.signal(); });
         puts("B");
     });
 
     ctz::schedule([=] {
-        CIEL_DEFER(C.signal());
+        CIEL_DEFER({ C.signal(); });
         puts("C");
     });
 }
@@ -175,7 +175,7 @@ int main() {
 TEST(DAGTest, DAGFanOutFanIn) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::DAG<Data&>::Builder builder;
 

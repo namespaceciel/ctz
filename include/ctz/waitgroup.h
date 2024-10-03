@@ -23,7 +23,8 @@ class WaitGroup {
 public:
     WaitGroup(size_t = 0);
 
-    void add(size_t = 1) const noexcept;
+    void
+    add(size_t = 1) const noexcept;
 
     bool
     done() const;

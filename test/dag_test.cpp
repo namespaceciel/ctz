@@ -24,7 +24,7 @@ struct Data {
 TEST(DAGTest, DAGChainNoArg) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::DAG<>::Builder builder;
 
@@ -50,7 +50,7 @@ TEST(DAGTest, DAGChainNoArg) {
 TEST(DAGTest, DAGChain) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::DAG<Data&>::Builder builder;
 
@@ -77,7 +77,7 @@ TEST(DAGTest, DAGChain) {
 TEST(DAGTest, DAGRunRepeat) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::DAG<Data&>::Builder builder;
 
@@ -111,7 +111,7 @@ TEST(DAGTest, DAGRunRepeat) {
 TEST(DAGTest, DAGFanOutFromRoot) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::DAG<Data&>::Builder builder;
 
@@ -132,7 +132,8 @@ TEST(DAGTest, DAGFanOutFromRoot) {
     dag->run(data);
 
     std::vector<std::string> tmp({"A", "B", "C"});
-    ASSERT_TRUE(std::is_permutation(data.order.begin(), data.order.end(), tmp.begin(), tmp.end()));
+    ASSERT_EQ(data.order.size(), tmp.size());
+    ASSERT_TRUE(std::is_permutation(data.order.begin(), data.order.end(), tmp.begin()));
 }
 
 /*
@@ -143,7 +144,7 @@ TEST(DAGTest, DAGFanOutFromRoot) {
 TEST(DAGTest, DAGFanOutFromNonRoot) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::DAG<Data&>::Builder builder;
 
@@ -167,7 +168,8 @@ TEST(DAGTest, DAGFanOutFromNonRoot) {
     dag->run(data);
 
     std::vector<std::string> tmp({"N", "A", "B", "C"});
-    ASSERT_TRUE(std::is_permutation(data.order.begin(), data.order.end(), tmp.begin(), tmp.end()));
+    ASSERT_EQ(data.order.size(), tmp.size());
+    ASSERT_TRUE(std::is_permutation(data.order.begin(), data.order.end(), tmp.begin()));
     ASSERT_EQ(data.order[0], "N");
 }
 
@@ -180,7 +182,7 @@ TEST(DAGTest, DAGFanOutFromNonRoot) {
 TEST(DAGTest, DAGFanOutFanIn) {
     ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
     scheduler.bind();
-    CIEL_DEFER(scheduler.unbind());
+    CIEL_DEFER({ scheduler.unbind(); });
 
     ctz::DAG<Data&>::Builder builder;
 
@@ -240,18 +242,18 @@ TEST(DAGTest, DAGFanOutFanIn) {
 
     std::vector<std::string> tmp({"A0", "A1", "B", "C0", "C1", "C2", "D", "E0", "E1", "E2", "E3", "F"});
 
-    ASSERT_TRUE(std::is_permutation(data.order.begin(), data.order.end(), tmp.begin(), tmp.end()));
+    ASSERT_EQ(data.order.size(), tmp.size());
+    ASSERT_TRUE(std::is_permutation(data.order.begin(), data.order.end(), tmp.begin()));
 
-    ASSERT_TRUE(std::is_permutation(data.order.begin() + 0, data.order.begin() + 2, tmp.begin() + 0, tmp.begin() + 2));
+    ASSERT_TRUE(std::is_permutation(data.order.begin() + 0, data.order.begin() + 2, tmp.begin() + 0));
 
     ASSERT_EQ(data.order[2], "B");
 
-    ASSERT_TRUE(std::is_permutation(data.order.begin() + 3, data.order.begin() + 6, tmp.begin() + 3, tmp.begin() + 6));
+    ASSERT_TRUE(std::is_permutation(data.order.begin() + 3, data.order.begin() + 6, tmp.begin() + 3));
 
     ASSERT_EQ(data.order[6], "D");
 
-    ASSERT_TRUE(
-        std::is_permutation(data.order.begin() + 7, data.order.begin() + 11, tmp.begin() + 7, tmp.begin() + 11));
+    ASSERT_TRUE(std::is_permutation(data.order.begin() + 7, data.order.begin() + 11, tmp.begin() + 7));
 
     ASSERT_EQ(data.order[11], "F");
 }
