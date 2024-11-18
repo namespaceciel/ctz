@@ -7,7 +7,7 @@
 NAMESPACE_CTZ_BEGIN
 
 // Event::Shared
-Event::Shared::Shared(const Mode m, const bool initialState) noexcept
+Event::Shared::Shared(Mode m, bool initialState) noexcept
     : mode(m), signalled(initialState) {}
 
 void Event::Shared::signal() {
@@ -43,7 +43,7 @@ void Event::Shared::wait() {
 }
 
 // Event
-Event::Event(const Mode mode, const bool initialState)
+Event::Event(Mode mode, bool initialState)
     : shared(ciel::make_shared<Shared>(mode, initialState)) {}
 
 void Event::signal() const {

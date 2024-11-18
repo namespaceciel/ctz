@@ -7,14 +7,14 @@
 NAMESPACE_CTZ_BEGIN
 
 // Data
-Data::Data(const size_t initialCount) noexcept
+Data::Data(size_t initialCount) noexcept
     : count(initialCount) {}
 
 // WaitGroup
-WaitGroup::WaitGroup(const size_t initialCount)
+WaitGroup::WaitGroup(size_t initialCount)
     : data(ciel::make_shared<Data>(initialCount)) {}
 
-void WaitGroup::add(const size_t num) const noexcept {
+void WaitGroup::add(size_t num) const noexcept {
     data->count += num;
 }
 

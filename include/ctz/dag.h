@@ -185,7 +185,7 @@ public:
 private:
     friend class DAGBuilder<T>;
 
-    DAGNodeBuilder(DAGBuilder<T>* b, const size_t i)
+    DAGNodeBuilder(DAGBuilder<T>* b, size_t i)
         : builder(b), index(i) {}
 
     DAGBuilder<T>* builder;

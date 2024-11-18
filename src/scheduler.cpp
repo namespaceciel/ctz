@@ -14,12 +14,12 @@ CIEL_NODISCARD SchedulerConfig SchedulerConfig::allCores() noexcept {
     return SchedulerConfig().setWorkerThreadCount(numLogicalCPUs());
 }
 
-SchedulerConfig& SchedulerConfig::setFiberStackSize(const size_t size) noexcept {
+SchedulerConfig& SchedulerConfig::setFiberStackSize(size_t size) noexcept {
     fiberStackSize = size;
     return *this;
 }
 
-SchedulerConfig& SchedulerConfig::setWorkerThreadCount(const size_t count) noexcept {
+SchedulerConfig& SchedulerConfig::setWorkerThreadCount(size_t count) noexcept {
     threadCount = count;
     return *this;
 }
