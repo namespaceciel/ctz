@@ -8,11 +8,13 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose build type: Debug/Release/RelWithDebInfo/MinSizeRel." FORCE)
 endif (NOT CMAKE_BUILD_TYPE)
 
+set(FETCHCONTENT_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party")
+
 include(FetchContent)
 FetchContent_Declare(
     ciellab
     GIT_REPOSITORY https://github.com/namespaceciel/ciellab.git
-    GIT_TAG        b4c0bcf5306b8fb8add9e3512d268ed4f18cb769
+    GIT_TAG        2ee015eb5da8cbde76da3fd4d7a938b59069d166
 )
 FetchContent_MakeAvailable(ciellab)
 

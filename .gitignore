@@ -4,3 +4,5 @@
 cmake-build-*
 build
 .vscode
+.cache
+third_party
