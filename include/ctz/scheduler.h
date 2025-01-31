@@ -32,6 +32,9 @@ class Scheduler {
 public:
     Scheduler(const SchedulerConfig&) noexcept;
 
+    Scheduler(const Scheduler&)            = delete;
+    Scheduler& operator=(const Scheduler&) = delete;
+
     void bind() noexcept;
 
     static void setBound(Scheduler*) noexcept;
@@ -47,9 +50,6 @@ public:
         workNum.fetch_add(1, std::memory_order_relaxed);
         workers[index.fetch_add(1, std::memory_order_relaxed) % workers.size()]->enqueue(std::forward<Args>(args)...);
     }
-
-    Scheduler(const Scheduler&)            = delete;
-    Scheduler& operator=(const Scheduler&) = delete;
 
     static Scheduler* bound;
 

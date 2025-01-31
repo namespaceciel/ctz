@@ -12,7 +12,9 @@ NAMESPACE_CTZ_BEGIN
 
 class ConditionVariable {
 public:
-    ConditionVariable() = default;
+    ConditionVariable()                                    = default;
+    ConditionVariable(const ConditionVariable&)            = delete;
+    ConditionVariable& operator=(const ConditionVariable&) = delete;
 
     void notify_one();
 
@@ -43,9 +45,6 @@ public:
             cv.wait(ul, std::forward<Predicate>(pred));
         }
     }
-
-    ConditionVariable(const ConditionVariable&)            = delete;
-    ConditionVariable& operator=(const ConditionVariable&) = delete;
 
 private:
     ciel::vector<std::unique_ptr<Fiber>> waitingTasks;
