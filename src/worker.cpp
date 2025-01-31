@@ -94,7 +94,7 @@ void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
                 mutex.unlock();
 
                 taskToBeDone();
-                --scheduler->workNum;
+                scheduler->workNum.fetch_sub(1, std::memory_order_relaxed);
                 continue;
             }
             // Newly enqueued task being stolen.
@@ -105,7 +105,7 @@ void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
         std::function<void()> out;
         if (stealWork(out)) {
             out();
-            --scheduler->workNum;
+            scheduler->workNum.fetch_sub(1, std::memory_order_relaxed);
             continue;
         }
 

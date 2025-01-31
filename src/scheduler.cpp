@@ -55,7 +55,7 @@ void Scheduler::unbind() noexcept {
     CIEL_ASSERT_M(get() != nullptr, "no scheduler bound");
 
     // See TasksInTasks test, we need to ensure workers is valid before works left.
-    while (workNum) {}
+    while (workNum.load(std::memory_order_relaxed) > 0) {}
 
     for (auto& t : workers) {
         t->stop();
