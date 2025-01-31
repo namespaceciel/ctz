@@ -15,11 +15,11 @@ WaitGroup::WaitGroup(size_t initialCount)
     : data(ciel::make_shared<Data>(initialCount)) {}
 
 void WaitGroup::add(size_t num) const noexcept {
-    data->count += num;
+    data->count.fetch_add(num, std::memory_order_relaxed);
 }
 
 bool WaitGroup::done() const {
-    if (--data->count == 0) {
+    if (data->count.fetch_sub(1, std::memory_order_relaxed) == 1) {
         const std::lock_guard<std::mutex> ul(data->mutex);
 
         data->cv.notify_all();
@@ -33,7 +33,7 @@ void WaitGroup::wait() const {
     std::unique_lock<std::mutex> ul(data->mutex);
 
     data->cv.wait(ul, [this] {
-        return data->count == 0;
+        return data->count.load(std::memory_order_relaxed) == 0;
     });
 }
 
