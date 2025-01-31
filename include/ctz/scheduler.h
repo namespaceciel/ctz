@@ -45,7 +45,7 @@ public:
         CIEL_ASSERT_M(!workers.empty(), "Scheduler::enqueue on empty scheduler");
 
         workNum.fetch_add(1, std::memory_order_relaxed);
-        workers[index++ % workers.size()]->enqueue(std::forward<Args>(args)...);
+        workers[index.fetch_add(1, std::memory_order_relaxed) % workers.size()]->enqueue(std::forward<Args>(args)...);
     }
 
     Scheduler(const Scheduler&)            = delete;
