@@ -213,7 +213,7 @@ public:
 
     template<class F>
     DAGNodeBuilder<T> node(F&& work, std::initializer_list<DAGNodeBuilder<T>> after) {
-        CIEL_ASSERT(numIns.size() == dag->nodes.size(), "DAGNodeBuilder vectors out of sync");
+        CIEL_ASSERT_M(numIns.size() == dag->nodes.size(), "DAGNodeBuilder vectors out of sync");
 
         auto index = dag->nodes.size(); // index of this new node after emplace_back, size - 1 of course.
 
@@ -238,7 +238,7 @@ public:
     CIEL_NODISCARD std::unique_ptr<DAG<T>> build() {
         auto numNodes = dag->nodes.size();
 
-        CIEL_ASSERT(numIns.size() == dag->nodes.size(), "DAGNodeBuilder vectors out of sync");
+        CIEL_ASSERT_M(numIns.size() == dag->nodes.size(), "DAGNodeBuilder vectors out of sync");
 
         for (size_t i = 0; i < numNodes; i++) {
             if (numIns[i] > 1) {

@@ -42,7 +42,7 @@ public:
 
     template<class... Args>
     void enqueue(Args&&... args) {
-        CIEL_ASSERT(!workers.empty(), "Scheduler::enqueue on empty scheduler");
+        CIEL_ASSERT_M(!workers.empty(), "Scheduler::enqueue on empty scheduler");
 
         ++workNum;
         workers[index++ % workers.size()]->enqueue(std::forward<Args>(args)...);
@@ -68,7 +68,7 @@ template<class... Args>
 void schedule(Args&&... args) {
     auto current = Scheduler::get();
 
-    CIEL_ASSERT(current != nullptr, "schedule when no scheduler bound");
+    CIEL_ASSERT_M(current != nullptr, "schedule when no scheduler bound");
 
     current->enqueue(std::forward<Args>(args)...);
 }

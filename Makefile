@@ -15,7 +15,7 @@ clean:
 .PHONY: clean
 
 test:
-	cmake -S . -B $(BUILD_DIR) -DCMAKE_CXX_CLANG_TIDY="clang-tidy" && \
+	cmake -S . -B $(BUILD_DIR) && \
 	cmake --build $(BUILD_DIR) --target ctz_test -j $(NUM_JOB) && \
 	$(BUILD_DIR)/ctz_test
 .PHONY: test

@@ -51,8 +51,8 @@ CIEL_NODISCARD Scheduler* Scheduler::get() noexcept {
 }
 
 void Scheduler::unbind() noexcept {
-    CIEL_ASSERT(get() == this, "unbind a scheduler that's not yours");
-    CIEL_ASSERT(get() != nullptr, "no scheduler bound");
+    CIEL_ASSERT_M(get() == this, "unbind a scheduler that's not yours");
+    CIEL_ASSERT_M(get() != nullptr, "no scheduler bound");
 
     // See TasksInTasks test, we need to ensure workers is valid before works left.
     while (workNum) {}

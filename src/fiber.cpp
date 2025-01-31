@@ -16,8 +16,8 @@ Fiber::Fiber(Worker* w, std::unique_ptr<OSFiber>&& i)
     : worker(w), impl(std::move(i)) {}
 
 void Fiber::switchTo(Fiber* to) {
-    CIEL_ASSERT(this == Fiber::current, "The Fiber calling Fiber::switchTo() is not running");
-    CIEL_ASSERT(this != to, "Fiber::switchTo() the same Fiber");
+    CIEL_ASSERT_M(this == Fiber::current, "The Fiber calling Fiber::switchTo() is not running");
+    CIEL_ASSERT_M(this != to, "Fiber::switchTo() the same Fiber");
 
     Fiber::current = to;
     impl->switchTo(to->impl.get());

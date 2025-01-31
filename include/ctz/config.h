@@ -12,6 +12,6 @@
 // namespace ctz
 
 #define NAMESPACE_CTZ_BEGIN namespace ctz {
-#define NAMESPACE_CTZ_END   } // namespace ctz
+#define NAMESPACE_CTZ_END   }
 
-#endif                        // CTZ_CONFIG_H
+#endif // CTZ_CONFIG_H

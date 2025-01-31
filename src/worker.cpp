@@ -14,7 +14,7 @@
 NAMESPACE_CTZ_BEGIN
 
 CIEL_NODISCARD unsigned int numLogicalCPUs() noexcept {
-    CIEL_PRECONDITION(std::thread::hardware_concurrency() != 0);
+    CIEL_ASSERT(std::thread::hardware_concurrency() != 0);
 
     return std::thread::hardware_concurrency();
 }
@@ -40,7 +40,7 @@ void Worker::enqueue(std::unique_ptr<Fiber>&& resumedTask) {
 }
 
 void Worker::start() {
-    CIEL_ASSERT(!thread.joinable(), "Worker::start() on a joinable thread");
+    CIEL_ASSERT_M(!thread.joinable(), "Worker::start() on a joinable thread");
 
     thread = std::thread([this] {
         current = this; // bind thread_local worker* to this thread
