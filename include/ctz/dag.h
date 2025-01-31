@@ -92,11 +92,11 @@ protected:
 
     // Transfer initialCounters to ctx->counters.
     void initCounters(RunContext* ctx) {
-        auto numCounters = initialCounters.size();
-        ctx->counters    = std::unique_ptr<std::atomic<size_t>[]>(new std::atomic<size_t>[numCounters]);
+        const auto numCounters = initialCounters.size();
+        ctx->counters          = std::unique_ptr<std::atomic<size_t>[]>(new std::atomic<size_t>[numCounters]);
 
         for (size_t i = 0; i < numCounters; ++i) {
-            ctx->counters[i] = {initialCounters[i]};
+            ctx->counters[i].store(initialCounters[i], std::memory_order_relaxed);
         }
     }
 
@@ -110,7 +110,7 @@ protected:
             return true;
         }
 
-        return --ctx->counters[node->counterIndex] == 0;
+        return ctx->counters[node->counterIndex].fetch_sub(1, std::memory_order_relaxed) == 1;
     }
 
     void invoke(RunContext* ctx, size_t nodeIdx, WaitGroup wg) {
