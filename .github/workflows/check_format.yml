@@ -1,0 +1,22 @@
+name: check_format
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: install clang-format
+        run: |
+            sudo bash install_clang_format.sh 19
+            sudo cp /usr/bin/clang-format-19 /usr/bin/clang-format
+            clang-format --version
+
+      - name: check format
+        run: make check_format
