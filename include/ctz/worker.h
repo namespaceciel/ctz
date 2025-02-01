@@ -21,7 +21,7 @@ class Scheduler;
 // Worker possess works on a single thread.
 class Worker {
 public:
-    explicit Worker();
+    Worker() = default;
 
     ~Worker();
 
@@ -66,7 +66,6 @@ private:
 
     static thread_local Worker* current;
 
-    Scheduler* const scheduler;
     std::unique_ptr<Fiber> mainFiber{nullptr};
     std::unique_ptr<Fiber> currentFiber{nullptr};    // Since we need to tell the task who's its fiber...
     std::thread thread;

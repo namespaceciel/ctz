@@ -31,7 +31,7 @@ public:
                 mutex.lock();
                 waitingTasks.emplace_back(
                     ciel::exchange(curWorker->currentFiber,
-                                   Fiber::create(curWorker, curWorker->scheduler->config.fiberStackSize, [curWorker] {
+                                   Fiber::create(curWorker, Scheduler::get().config.fiberStackSize, [curWorker] {
                                        curWorker->run();
                                    })));
                 mutex.unlock();

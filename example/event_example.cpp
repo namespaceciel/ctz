@@ -2,9 +2,8 @@
 #include <ctz/event.h>
 
 int main() {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     ctz::Event B;
     ctz::Event C;
@@ -13,17 +12,17 @@ int main() {
 
     ctz::Event A = ctz::Event::any(il.begin(), il.end());
 
-    ctz::schedule([=] {
+    ctz::Scheduler::schedule([=] {
         A.wait(); // Wait for B or C's done
         puts("A");
     });
 
-    ctz::schedule([=] {
+    ctz::Scheduler::schedule([=] {
         CIEL_DEFER({ B.signal(); });
         puts("B");
     });
 
-    ctz::schedule([=] {
+    ctz::Scheduler::schedule([=] {
         CIEL_DEFER({ C.signal(); });
         puts("C");
     });

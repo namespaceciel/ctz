@@ -39,7 +39,6 @@ add_library(ctz STATIC
     src/osfiber_x64.c
     src/osfiber_x64.S
     src/osfiber.cpp
-    src/scheduler.cpp
     src/ticket.cpp
     src/waitgroup.cpp
     src/worker.cpp

@@ -6,9 +6,8 @@
 #include <ctz/ticket.h>
 
 TEST(TicketTest, all) {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     ctz::TicketQueue queue;
 
@@ -19,7 +18,7 @@ TEST(TicketTest, all) {
     for (int i = 0; i < count; ++i) {
         auto ticket = queue.take();
 
-        ctz::schedule([ticket, i, &result, &next] {
+        ctz::Scheduler::schedule([ticket, i, &result, &next] {
             ticket->wait();
             result[next++] = i;
             ticket->done();

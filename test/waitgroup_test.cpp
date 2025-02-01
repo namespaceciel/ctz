@@ -9,14 +9,13 @@
 #include <thread>
 
 TEST(WaitGroupTest, WaitGroup_OneTask) {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     const ctz::WaitGroup wg(1);
     std::atomic<size_t> counter = {0};
 
-    ctz::schedule([&counter, wg] {
+    ctz::Scheduler::schedule([&counter, wg] {
         ++counter;
         wg.done();
     });
@@ -27,15 +26,14 @@ TEST(WaitGroupTest, WaitGroup_OneTask) {
 }
 
 TEST(WaitGroupTest, WaitGroup_10Tasks) {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     const ctz::WaitGroup wg(10);
     std::atomic<size_t> counter = {0};
 
     for (size_t i = 0; i < 10; ++i) {
-        ctz::schedule([&counter, wg] {
+        ctz::Scheduler::schedule([&counter, wg] {
             ++counter;
             wg.done();
         });
@@ -50,20 +48,19 @@ TEST(WaitGroupTest, NotifyAsTask) {
     std::atomic<size_t> counter = {0};
 
     {
-        ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-        scheduler.bind();
-        CIEL_DEFER({ scheduler.unbind(); });
+        ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+        CIEL_DEFER({ ctz::Scheduler::stop(); });
 
         const ctz::WaitGroup wg(1);
 
         for (size_t i = 0; i < 1000; ++i) {
-            ctz::schedule([&counter, wg] {
+            ctz::Scheduler::schedule([&counter, wg] {
                 wg.wait();
                 ++counter;
             });
         }
 
-        ctz::schedule([=] {
+        ctz::Scheduler::schedule([=] {
             wg.done();
         });
     }
@@ -75,21 +72,20 @@ TEST(WaitGroupTest, NotifyAsTask2) {
     std::atomic<size_t> counter = {0};
 
     {
-        ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-        scheduler.bind();
-        CIEL_DEFER({ scheduler.unbind(); });
+        ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+        CIEL_DEFER({ ctz::Scheduler::stop(); });
 
         const ctz::WaitGroup wg(1);
 
         for (size_t i = 0; i < 1000; ++i) {
-            ctz::schedule([&counter, wg] {
+            ctz::Scheduler::schedule([&counter, wg] {
                 ++counter;
                 wg.wait();
                 ++counter;
             });
         }
 
-        ctz::schedule([=] {
+        ctz::Scheduler::schedule([=] {
             wg.done();
         });
     }
@@ -98,15 +94,14 @@ TEST(WaitGroupTest, NotifyAsTask2) {
 }
 
 TEST(WaitGroupTest, SameThread) {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     const ctz::WaitGroup fence(1);
     const ctz::WaitGroup wg(1000);
 
     for (int i = 0; i < 1000; ++i) {
-        ctz::schedule([=] {
+        ctz::Scheduler::schedule([=] {
             auto threadID = std::this_thread::get_id();
             fence.wait();
             ASSERT_EQ(threadID, std::this_thread::get_id());

@@ -47,16 +47,15 @@ TEST(EventTest, EventManualTest) {
 }
 
 TEST(EventTest, EventAutoWait) {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     std::atomic<int> counter = {0};
     auto event               = ctz::Event(ctz::Event::Mode::Auto);
     auto done                = ctz::Event(ctz::Event::Mode::Auto);
 
     for (int i = 0; i < 3; ++i) {
-        ctz::schedule([=, &counter] {
+        ctz::Scheduler::schedule([=, &counter] {
             event.wait();
             ++counter;
             done.signal();
@@ -79,16 +78,15 @@ TEST(EventTest, EventAutoWait) {
 }
 
 TEST(EventTest, EventManualWait) {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     std::atomic<int> counter = {0};
     auto event               = ctz::Event(ctz::Event::Mode::Manual);
     auto wg                  = ctz::WaitGroup(3);
 
     for (int i = 0; i < 3; ++i) {
-        ctz::schedule([=, &counter] {
+        ctz::Scheduler::schedule([=, &counter] {
             event.wait();
             ++counter;
             wg.done();
@@ -101,9 +99,8 @@ TEST(EventTest, EventManualWait) {
 }
 
 TEST(EventTest, EventSequence) {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     for (auto mode : {ctz::Event::Mode::Manual, ctz::Event::Mode::Auto}) {
         std::string sequence;
@@ -112,19 +109,19 @@ TEST(EventTest, EventSequence) {
         auto eventC = ctz::Event(mode);
         auto done   = ctz::Event(mode);
 
-        ctz::schedule([=, &sequence] {
+        ctz::Scheduler::schedule([=, &sequence] {
             eventA.wait();
             sequence += "A";
             eventB.signal();
         });
 
-        ctz::schedule([=, &sequence] {
+        ctz::Scheduler::schedule([=, &sequence] {
             eventB.wait();
             sequence += "B";
             eventC.signal();
         });
 
-        ctz::schedule([=, &sequence] {
+        ctz::Scheduler::schedule([=, &sequence] {
             eventC.wait();
             sequence += "C";
             done.signal();

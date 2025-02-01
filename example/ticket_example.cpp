@@ -16,12 +16,11 @@ bool isPrime(int i) {
 
 int main() {
     // Choose how many cores needed, allCores() will pick all of them.
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind(); // Bound to global, check out waitgroup_example for reasons
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
 
     // CIEL_DEFER wrap the expression into a lambda, storing it to ciel::finally,
     // when it reaches out of scope, the destructor of ciel::finally will call that expression earlier.
-    CIEL_DEFER({ scheduler.unbind(); });
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     ctz::TicketQueue queue;
 
@@ -29,8 +28,8 @@ int main() {
         // Take a Ticket being in queue.
         auto ticket = queue.take();
 
-        ctz::schedule([=] { // lambda capture by value, all tools are implemented as shared_ptr, guaranteeing the
-                            // lifetime correctness.
+        ctz::Scheduler::schedule([=] { // lambda capture by value, all tools are implemented as shared_ptr, guaranteeing
+                                       // the lifetime correctness.
             // Multiple tasks calculate primes at the same time, storing them into vector
             ciel::vector<int> primes;
             for (int i = searchBase; i < searchBase + 1000; ++i) {

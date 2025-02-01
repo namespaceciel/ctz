@@ -6,42 +6,15 @@
 #include <ctz/scheduler.h>
 #include <memory>
 
-TEST(SchedulerTest, ConstructAndDestruct) {
-    auto scheduler = std::unique_ptr<ctz::Scheduler>(new ctz::Scheduler(ctz::SchedulerConfig()));
-}
-
-TEST(SchedulerTest, BindAndUnbind) {
-    auto scheduler = std::unique_ptr<ctz::Scheduler>(new ctz::Scheduler(ctz::SchedulerConfig()));
-    scheduler->bind();
-
-    auto got = ctz::Scheduler::get();
-    ASSERT_EQ(scheduler.get(), got);
-
-    scheduler->unbind();
-    got = ctz::Scheduler::get();
-    ASSERT_EQ(got, nullptr);
-}
-
-TEST(SchedulerTest, CheckConfig) {
-    ctz::SchedulerConfig cfg;
-    cfg.threadCount = 10;
-
-    auto scheduler = std::unique_ptr<ctz::Scheduler>(new ctz::Scheduler(cfg));
-
-    auto gotCfg = scheduler->config;
-    ASSERT_EQ(gotCfg.threadCount, 10);
-}
-
 TEST(SchedulerTest, SingleThreadCounter) {
     std::atomic<size_t> counter = {0};
 
     {
-        ctz::Scheduler scheduler(ctz::SchedulerConfig{});
-        scheduler.bind();
-        CIEL_DEFER({ scheduler.unbind(); });
+        ctz::Scheduler::start(ctz::SchedulerConfig{});
+        CIEL_DEFER({ ctz::Scheduler::stop(); });
 
         for (int i = 0; i < 1000; ++i) {
-            ctz::schedule([&] {
+            ctz::Scheduler::schedule([&] {
                 ++counter;
             });
         }
@@ -54,12 +27,11 @@ TEST(SchedulerTest, MultipleThreadCounter) {
     std::atomic<size_t> counter = {0};
 
     {
-        ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-        scheduler.bind();
-        CIEL_DEFER({ scheduler.unbind(); });
+        ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+        CIEL_DEFER({ ctz::Scheduler::stop(); });
 
         for (int i = 0; i < 1000; ++i) {
-            ctz::schedule([&] {
+            ctz::Scheduler::schedule([&] {
                 ++counter;
             });
         }
@@ -72,15 +44,14 @@ TEST(SchedulerTest, TasksInTasks) {
     std::atomic<size_t> counter = {0};
 
     {
-        ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-        scheduler.bind();
-        CIEL_DEFER({ scheduler.unbind(); });
+        ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+        CIEL_DEFER({ ctz::Scheduler::stop(); });
 
         for (int i = 0; i < 500; ++i) {
-            ctz::schedule([&] {
+            ctz::Scheduler::schedule([&] {
                 ++counter;
 
-                ctz::schedule([&] {
+                ctz::Scheduler::schedule([&] {
                     ++counter;
                 });
             });

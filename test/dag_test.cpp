@@ -27,9 +27,8 @@ struct Data {
 
 // [A] --> [B] --> [C]
 TEST(DAGTest, DAGChainNoArg) {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     ctz::DAG<>::Builder builder;
 
@@ -53,9 +52,8 @@ TEST(DAGTest, DAGChainNoArg) {
 
 // [A] --> [B] --> [C]
 TEST(DAGTest, DAGChain) {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     ctz::DAG<Data&>::Builder builder;
 
@@ -80,9 +78,8 @@ TEST(DAGTest, DAGChain) {
 
 // [A] --> [B] --> [C]
 TEST(DAGTest, DAGRunRepeat) {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     ctz::DAG<Data&>::Builder builder;
 
@@ -114,9 +111,8 @@ TEST(DAGTest, DAGRunRepeat) {
            \--> [C]
 */
 TEST(DAGTest, DAGFanOutFromRoot) {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     ctz::DAG<Data&>::Builder builder;
 
@@ -147,9 +143,8 @@ TEST(DAGTest, DAGFanOutFromRoot) {
                 \--> [C]
 */
 TEST(DAGTest, DAGFanOutFromNonRoot) {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     ctz::DAG<Data&>::Builder builder;
 
@@ -185,9 +180,8 @@ TEST(DAGTest, DAGFanOutFromNonRoot) {
                                                     \--> [E3] --/
 */
 TEST(DAGTest, DAGFanOutFanIn) {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     ctz::DAG<Data&>::Builder builder;
 

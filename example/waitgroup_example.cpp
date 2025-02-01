@@ -2,9 +2,8 @@
 #include <ctz/waitgroup.h>
 
 int main() {
-    ctz::Scheduler scheduler(ctz::SchedulerConfig::allCores());
-    scheduler.bind();
-    CIEL_DEFER({ scheduler.unbind(); });
+    ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
+    CIEL_DEFER({ ctz::Scheduler::stop(); });
 
     // __________________________________________________________
     // |                                                          |
@@ -18,7 +17,7 @@ int main() {
     ctz::WaitGroup a_wg(1);
 
     // task A
-    ctz::schedule([=] {
+    ctz::Scheduler::schedule([=] {
         CIEL_DEFER({ a_wg.done(); }); // Decrement a_wg when task A is done
 
         puts("1");
@@ -28,13 +27,13 @@ int main() {
         ctz::WaitGroup bc_wg(2);
 
         // task B
-        ctz::schedule([=] { // schedule inside Scheduler, the reason to use Scheduler::bind()
+        ctz::Scheduler::schedule([=] { // schedule inside Scheduler, the reason to use Scheduler::bind()
             CIEL_DEFER({ bc_wg.done(); });
             puts("2");
         });
 
         // task C
-        ctz::schedule([=] {
+        ctz::Scheduler::schedule([=] {
             CIEL_DEFER({ bc_wg.done(); });
             puts("3");
         });

@@ -15,9 +15,6 @@ NAMESPACE_CTZ_BEGIN
 
 thread_local Worker* Worker::current = nullptr;
 
-Worker::Worker()
-    : scheduler(Scheduler::get()) {}
-
 Worker::~Worker() {
     if (thread.joinable()) {
         stop();
@@ -41,7 +38,7 @@ void Worker::start() {
 
         mainFiber      = Fiber::createFromCurrentThread(this);
         Fiber::current = mainFiber.get();
-        currentFiber   = Fiber::create(this, scheduler->config.fiberStackSize, [this] {
+        currentFiber   = Fiber::create(this, Scheduler::get().config.fiberStackSize, [this] {
             run();
         });
 
@@ -64,6 +61,7 @@ void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
 }
 
 [[noreturn]] void Worker::run() noexcept {
+    auto& scheduler = Scheduler::get();
     while (true) {
         // Firstly complete all fibers.
         if (!queuedFibers.empty()) { // Fiber can't be stolen.
@@ -88,7 +86,7 @@ void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
                 mutex.unlock();
 
                 taskToBeDone();
-                scheduler->workNum.fetch_sub(1, std::memory_order_relaxed);
+                scheduler.workNum.fetch_sub(1, std::memory_order_relaxed);
                 continue;
             }
             // Newly enqueued task being stolen.
@@ -99,7 +97,7 @@ void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
         std::function<void()> out;
         if (stealWork(out)) {
             out();
-            scheduler->workNum.fetch_sub(1, std::memory_order_relaxed);
+            scheduler.workNum.fetch_sub(1, std::memory_order_relaxed);
             continue;
         }
 
@@ -112,7 +110,7 @@ void Worker::switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
 }
 
 CIEL_NODISCARD bool Worker::stealWork(std::function<void()>& out) noexcept {
-    for (std::unique_ptr<Worker>& worker : scheduler->workers) {
+    for (std::unique_ptr<Worker>& worker : Scheduler::get().workers) {
         if (this == worker.get()) {
             continue;
         }

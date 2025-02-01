@@ -29,49 +29,74 @@ struct SchedulerConfig {
 
 class Scheduler {
 public:
-    Scheduler(const SchedulerConfig cfg) noexcept
-        : config(cfg) {}
-
     Scheduler(const Scheduler&)            = delete;
     Scheduler& operator=(const Scheduler&) = delete;
 
-    void bind() noexcept;
+    static void start(const SchedulerConfig cfg) noexcept {
+        auto& self = get();
 
-    static void setBound(Scheduler*) noexcept;
+        CIEL_ASSERT(!is_running());
+        CIEL_ASSERT(cfg.threadCount > 0);
+        CIEL_ASSERT_M(cfg.fiberStackSize >= 16 * 1024, "Stack sizes less than 16KB may cause issues on some platforms");
 
-    CIEL_NODISCARD static Scheduler* get() noexcept;
+        self.config = cfg;
+        self.workers.reserve(self.config.threadCount);
 
-    void unbind() noexcept;
+        for (size_t i = 0; i < self.config.threadCount; ++i) {
+            self.workers.unchecked_emplace_back(new Worker);
+        }
 
-    template<class... Args>
-    void enqueue(Args&&... args) {
-        CIEL_ASSERT_M(!workers.empty(), "Scheduler::enqueue on empty scheduler");
-
-        workNum.fetch_add(1, std::memory_order_relaxed);
-        workers[index.fetch_add(1, std::memory_order_relaxed) % workers.size()]->enqueue(std::forward<Args>(args)...);
+        for (auto& t : self.workers) {
+            t->start();
+        }
     }
 
-    static Scheduler* bound;
+    static void stop() noexcept {
+        auto& self = get();
 
-    const SchedulerConfig config;
+        CIEL_ASSERT(is_running());
+
+        while (self.workNum.load(std::memory_order_relaxed) > 0) {}
+
+        for (auto& t : self.workers) {
+            t->stop();
+        }
+
+        self.workers.clear();
+    }
+
+    template<class... Args>
+    static void schedule(Args&&... args) noexcept {
+        auto& self = get();
+
+        CIEL_ASSERT_M(is_running(), "Scheduler has not started yet");
+
+        self.workNum.fetch_add(1, std::memory_order_relaxed);
+        self.workers[self.index.fetch_add(1, std::memory_order_relaxed) % self.workers.size()]->enqueue(
+            std::forward<Args>(args)...);
+    }
+
+    CIEL_NODISCARD static bool is_running() noexcept {
+        return !get().workers.empty();
+    }
 
 private:
+    Scheduler() = default;
+
+    CIEL_NODISCARD static Scheduler& get() noexcept {
+        static Scheduler res;
+        return res;
+    }
+
     friend class Worker;
+    friend class ConditionVariable;
 
     ciel::vector<std::unique_ptr<Worker>> workers;
     std::atomic<size_t> workNum{0};
     std::atomic<size_t> index{0};
+    SchedulerConfig config;
 
 }; // class Scheduler
-
-template<class... Args>
-void schedule(Args&&... args) {
-    auto current = Scheduler::get();
-
-    CIEL_ASSERT_M(current != nullptr, "schedule when no scheduler bound");
-
-    current->enqueue(std::forward<Args>(args)...);
-}
 
 NAMESPACE_CTZ_END
 
