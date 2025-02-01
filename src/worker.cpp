@@ -31,10 +31,10 @@ void Worker::start() noexcept {
     });
 }
 
-[[noreturn]] void Worker::run() noexcept {
+void Worker::run() noexcept {
     auto& scheduler = Scheduler::get();
 
-    while (true) {
+    while (!stop_flag.load(std::memory_order_relaxed)) {
         // Firstly complete all fibers.
         if (!queuedFibers.empty()) { // Fiber can't be stolen.
             mutex.lock();
@@ -65,6 +65,10 @@ void Worker::start() noexcept {
             mutex.unlock();
         }
 
+        if (stop_flag.load(std::memory_order_relaxed)) {
+            break;
+        }
+
         // steal
         std::function<void()> out;
         if (stealWork(out)) {
@@ -76,9 +80,11 @@ void Worker::start() noexcept {
         // No works, block itself
         std::unique_lock<std::mutex> ul(mutex);
         cv.wait(ul, [this] {
-            return !queuedFibers.empty() || !queuedTasks.empty();
+            return !queuedFibers.empty() || !queuedTasks.empty() || stop_flag.load(std::memory_order_relaxed);
         });
     }
+
+    switchToFiber(std::move(mainFiber)); // mainFiber is done here...
 }
 
 CIEL_NODISCARD bool Worker::stealWork(std::function<void()>& out) noexcept {

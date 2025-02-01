@@ -2,6 +2,8 @@
 #define CTZ_WORKER_H_
 
 #include <algorithm>
+#include <atomic>
+#include <ciel/core/config.hpp>
 #include <ciel/experimental/list.hpp>
 #include <condition_variable>
 #include <ctz/config.hpp>
@@ -63,11 +65,10 @@ private:
 
     void start() noexcept;
 
+    // stop would only be called when no work left.
     void stop() noexcept {
-        enqueue([this] {
-            switchToFiber(std::move(mainFiber)); // mainFiber is done here...
-        });
-
+        stop_flag.store(true, std::memory_order_relaxed);
+        cv.notify_one();
         thread.join();
     }
 
@@ -77,17 +78,15 @@ private:
         from->switchTo(currentFiber.get());
     }
 
-    [[noreturn]] void run() noexcept;
+    void run() noexcept;
 
     CIEL_NODISCARD bool stealWork(std::function<void()>&) noexcept;
 
     CIEL_NODISCARD bool stealFromThis(std::function<void()>& out) noexcept {
-        // Since switching to mainFiber will be the last task pushed into queue when shutting down,
-        // we can't tell their differences, so we don't steal one-size queue.
-        if (queuedTasks.size() > 1) {
+        if (!queuedTasks.empty()) {
             const std::lock_guard<std::mutex> lg(mutex);
 
-            if (queuedTasks.size() > 1) {
+            if CIEL_LIKELY (!queuedTasks.empty()) {
                 out = std::move(queuedTasks.front());
                 queuedTasks.pop();
 
@@ -107,6 +106,7 @@ private:
     std::queue<std::function<void()>> queuedTasks;   // produced by enqueue(std::function<void()>), consumed by run()
     std::mutex mutex;                                // Guarding queuedFibers and queuedTasks.
     std::condition_variable cv;
+    std::atomic<bool> stop_flag{false};
 
 }; // class Worker
 
