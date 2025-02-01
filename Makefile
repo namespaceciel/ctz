@@ -20,6 +20,21 @@ test:
 	$(BUILD_DIR)/ctz_test
 .PHONY: test
 
+e1:
+	cmake -S . -B $(BUILD_DIR) && \
+	cmake --build $(BUILD_DIR) --target ctz_ticket_example -j $(NUM_JOB) && \
+	$(BUILD_DIR)/ctz_ticket_example
+
+e2:
+	cmake -S . -B $(BUILD_DIR) && \
+	cmake --build $(BUILD_DIR) --target ctz_waitgroup_example -j $(NUM_JOB) && \
+	$(BUILD_DIR)/ctz_waitgroup_example
+
+e3:
+	cmake -S . -B $(BUILD_DIR) && \
+	cmake --build $(BUILD_DIR) --target ctz_event_example -j $(NUM_JOB) && \
+	$(BUILD_DIR)/ctz_event_example
+
 format:
 	./format.sh run $(PROJECT_SOURCE_DIR)/include $(PROJECT_SOURCE_DIR)/src $(PROJECT_SOURCE_DIR)/test $(PROJECT_SOURCE_DIR)/example
 .PHONY: format

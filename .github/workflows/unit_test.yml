@@ -15,3 +15,6 @@ jobs:
       - name: test
         run: |
             make test
+            make e1
+            make e2
+            make e3

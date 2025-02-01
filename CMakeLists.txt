@@ -65,12 +65,12 @@ if (CTZ_BUILD_TESTS)
     enable_testing()
 
     add_executable(ctz_test
+        test/dag_test.cpp
+        test/event_test.cpp
         test/osfiber_test.cpp
         test/scheduler_test.cpp
-        test/waitgroup_test.cpp
-        test/event_test.cpp
-        test/dag_test.cpp
         test/ticket_test.cpp
+        test/waitgroup_test.cpp
     )
 
     target_link_libraries(ctz_test
@@ -93,7 +93,7 @@ if(CTZ_BUILD_EXAMPLES)
         target_compile_options(ctz_${target} PUBLIC -Wall -Wextra -Werror)
     endfunction(build_example)
 
+    build_example(event_example)
     build_example(ticket_example)
     build_example(waitgroup_example)
-    build_example(event_example)
 endif(CTZ_BUILD_EXAMPLES)
