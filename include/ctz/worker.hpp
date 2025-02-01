@@ -16,17 +16,19 @@ CIEL_NODISCARD inline unsigned int numLogicalCPUs() noexcept {
     return std::max<unsigned int>(std::thread::hardware_concurrency(), 1);
 }
 
-class Scheduler;
-
 // Worker possess works on a single thread.
 class Worker {
 public:
     Worker() = default;
 
-    ~Worker();
+    ~Worker() {
+        if (thread.joinable()) {
+            stop();
+        }
+    }
 
     template<class Function>
-    void enqueue(Function&& f) {
+    void enqueue(Function&& f) noexcept {
         {
             const std::lock_guard<std::mutex> lg(mutex);
             queuedTasks.push(std::forward<Function>(f));
@@ -36,7 +38,7 @@ public:
     }
 
     template<class Function, class... Args>
-    void enqueue(Function&& f, Args&&... args) {
+    void enqueue(Function&& f, Args&&... args) noexcept {
         {
             const std::lock_guard<std::mutex> lg(mutex);
             queuedTasks.push(std::bind(std::forward<Function>(f), std::forward<Args>(args)...));
@@ -45,24 +47,56 @@ public:
         cv.notify_one();
     }
 
-    void enqueue(std::unique_ptr<Fiber>&&);
+    void enqueue(std::unique_ptr<Fiber>&& resumedTask) noexcept {
+        {
+            const std::lock_guard<std::mutex> lg(mutex);
+            queuedFibers.push(std::move(resumedTask));
+        }
+
+        cv.notify_one();
+    }
 
 private:
     friend class Fiber;
     friend class Scheduler;
     friend class ConditionVariable;
 
-    void start();
+    void start() noexcept;
 
-    void stop() noexcept;
+    void stop() noexcept {
+        enqueue([this] {
+            switchToFiber(std::move(mainFiber)); // mainFiber is done here...
+        });
 
-    void switchToFiber(std::unique_ptr<Fiber>&&) noexcept;
+        thread.join();
+    }
+
+    void switchToFiber(std::unique_ptr<Fiber>&& to) noexcept {
+        auto from    = std::move(currentFiber);
+        currentFiber = std::move(to);
+        from->switchTo(currentFiber.get());
+    }
 
     [[noreturn]] void run() noexcept;
 
     CIEL_NODISCARD bool stealWork(std::function<void()>&) noexcept;
 
-    CIEL_NODISCARD bool stealFromThis(std::function<void()>&) noexcept;
+    CIEL_NODISCARD bool stealFromThis(std::function<void()>& out) noexcept {
+        // Since switching to mainFiber will be the last task pushed into queue when shutting down,
+        // we can't tell their differences, so we don't steal one-size queue.
+        if (queuedTasks.size() > 1) {
+            const std::lock_guard<std::mutex> lg(mutex);
+
+            if (queuedTasks.size() > 1) {
+                out = std::move(queuedTasks.front());
+                queuedTasks.pop();
+
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     static thread_local Worker* current;
 
