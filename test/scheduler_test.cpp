@@ -24,7 +24,7 @@ TEST(SchedulerTest, BindAndUnbind) {
 
 TEST(SchedulerTest, CheckConfig) {
     ctz::SchedulerConfig cfg;
-    cfg.setWorkerThreadCount(10);
+    cfg.threadCount = 10;
 
     auto scheduler = std::unique_ptr<ctz::Scheduler>(new ctz::Scheduler(cfg));
 
@@ -36,7 +36,7 @@ TEST(SchedulerTest, SingleThreadCounter) {
     std::atomic<size_t> counter = {0};
 
     {
-        ctz::Scheduler scheduler(ctz::SchedulerConfig().setWorkerThreadCount(1));
+        ctz::Scheduler scheduler(ctz::SchedulerConfig{});
         scheduler.bind();
         CIEL_DEFER({ scheduler.unbind(); });
 

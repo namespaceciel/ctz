@@ -9,25 +9,7 @@ NAMESPACE_CTZ_BEGIN
 
 Scheduler* Scheduler::bound = nullptr;
 
-// SchedulerConfig
-CIEL_NODISCARD SchedulerConfig SchedulerConfig::allCores() noexcept {
-    return SchedulerConfig().setWorkerThreadCount(numLogicalCPUs());
-}
-
-SchedulerConfig& SchedulerConfig::setFiberStackSize(size_t size) noexcept {
-    fiberStackSize = size;
-    return *this;
-}
-
-SchedulerConfig& SchedulerConfig::setWorkerThreadCount(size_t count) noexcept {
-    threadCount = count;
-    return *this;
-}
-
 // Scheduler
-Scheduler::Scheduler(const SchedulerConfig& cfg) noexcept
-    : config(cfg) {}
-
 void Scheduler::bind() noexcept {
     setBound(this);
 

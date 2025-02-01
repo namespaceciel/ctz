@@ -1,6 +1,7 @@
 #ifndef CTZ_WORKER_H_
 #define CTZ_WORKER_H_
 
+#include <algorithm>
 #include <ciel/experimental/list.hpp>
 #include <condition_variable>
 #include <ctz/config.h>
@@ -11,7 +12,9 @@
 
 NAMESPACE_CTZ_BEGIN
 
-CIEL_NODISCARD unsigned int numLogicalCPUs() noexcept;
+CIEL_NODISCARD inline unsigned int numLogicalCPUs() noexcept {
+    return std::max<unsigned int>(std::thread::hardware_concurrency(), 1);
+}
 
 class Scheduler;
 

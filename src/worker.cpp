@@ -13,12 +13,6 @@
 
 NAMESPACE_CTZ_BEGIN
 
-CIEL_NODISCARD unsigned int numLogicalCPUs() noexcept {
-    CIEL_ASSERT(std::thread::hardware_concurrency() != 0);
-
-    return std::thread::hardware_concurrency();
-}
-
 thread_local Worker* Worker::current = nullptr;
 
 Worker::Worker()

@@ -15,22 +15,22 @@ NAMESPACE_CTZ_BEGIN
 struct SchedulerConfig {
     static constexpr size_t DefaultFiberStackSize = 1024 * 1024;
 
-    size_t fiberStackSize{DefaultFiberStackSize};
-
-    size_t threadCount{0};
+    size_t fiberStackSize = DefaultFiberStackSize;
+    size_t threadCount    = 1;
 
     // Use all available cores.
-    CIEL_NODISCARD static SchedulerConfig allCores() noexcept;
-
-    SchedulerConfig& setFiberStackSize(size_t) noexcept;
-
-    SchedulerConfig& setWorkerThreadCount(size_t) noexcept;
+    CIEL_NODISCARD static SchedulerConfig allCores() noexcept {
+        SchedulerConfig res;
+        res.threadCount = ctz::numLogicalCPUs();
+        return res;
+    }
 
 }; // struct SchedulerConfig
 
 class Scheduler {
 public:
-    Scheduler(const SchedulerConfig&) noexcept;
+    Scheduler(const SchedulerConfig cfg) noexcept
+        : config(cfg) {}
 
     Scheduler(const Scheduler&)            = delete;
     Scheduler& operator=(const Scheduler&) = delete;

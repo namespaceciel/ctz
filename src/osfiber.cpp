@@ -1,4 +1,5 @@
 #include <ciel/core/config.hpp>
+#include <ciel/core/message.hpp>
 #include <cstdint>
 #include <cstdlib>
 #include <ctz/config.h>
@@ -20,6 +21,8 @@ CIEL_NODISCARD std::unique_ptr<OSFiber> OSFiber::createFiberFromCurrentThread() 
 }
 
 CIEL_NODISCARD std::unique_ptr<OSFiber> OSFiber::createFiber(size_t stackSize, std::function<void()>&& func) {
+    CIEL_ASSERT_M(stackSize >= 16 * 1024, "Stack sizes less than 16KB may cause issues on some platforms");
+
     auto out    = std::unique_ptr<OSFiber>(new OSFiber);
     out->target = std::move(func);
     out->stack  = ::operator new(stackSize);
