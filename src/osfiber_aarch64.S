@@ -1,7 +1,7 @@
 #if defined(__aarch64__)
 
 #define CTZ_BUILD_ASM 1
-#include <ctz/osfiber_aarch64.h>
+#include <ctz/osfiber_aarch64.hpp>
 
 #if defined(__ARM_FEATURE_PAC_DEFAULT) && __ARM_FEATURE_PAC_DEFAULT
 // ENABLE_PAUTH must be defined to 1 since this value will be used in

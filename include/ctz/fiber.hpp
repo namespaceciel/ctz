@@ -1,8 +1,8 @@
 #ifndef CTZ_FIBER_H_
 #define CTZ_FIBER_H_
 
-#include <ctz/config.h>
-#include <ctz/osfiber.h>
+#include <ctz/config.hpp>
+#include <ctz/osfiber.hpp>
 #include <functional>
 #include <memory>
 

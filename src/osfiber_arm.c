@@ -1,6 +1,6 @@
 #if defined(__arm__)
 
-#  include <ctz/osfiber_arm.h>
+#  include <ctz/osfiber_arm.hpp>
 
 void ctz_fiber_trampoline(void (*target)(void*), void* arg) {
     target(arg);

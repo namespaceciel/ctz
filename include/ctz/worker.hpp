@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <ciel/experimental/list.hpp>
 #include <condition_variable>
-#include <ctz/config.h>
-#include <ctz/fiber.h>
+#include <ctz/config.hpp>
+#include <ctz/fiber.hpp>
 #include <mutex>
 #include <queue>
 #include <thread>

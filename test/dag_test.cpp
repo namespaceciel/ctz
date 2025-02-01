@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <ciel/core/finally.hpp>
 #include <ciel/vector.hpp>
-#include <ctz/dag.h>
-#include <ctz/scheduler.h>
+#include <ctz/dag.hpp>
+#include <ctz/scheduler.hpp>
 #include <functional>
 #include <mutex>
 #include <string>

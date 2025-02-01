@@ -1,7 +1,7 @@
 #if defined(__x86_64__)
 
 #define CTZ_BUILD_ASM 1
-#include <ctz/osfiber_x64.h>
+#include <ctz/osfiber_x64.hpp>
 
 // void ctz_fiber_swap(ctz_fiber_context* from, const ctz_fiber_context* to)
 // rdi: from

@@ -2,17 +2,17 @@
 #define CTZ_OSFIBER_H_
 
 #if defined(__x86_64__)
-#  include <ctz/osfiber_x64.h>
+#  include <ctz/osfiber_x64.hpp>
 #elif defined(__aarch64__)
-#  include <ctz/osfiber_aarch64.h>
+#  include <ctz/osfiber_aarch64.hpp>
 #elif defined(__arm__)
-#  include <ctz/osfiber_arm.h>
+#  include <ctz/osfiber_arm.hpp>
 #else
 #  error "Unsupported target"
 #endif
 
 #include <cstdint>
-#include <ctz/config.h>
+#include <ctz/config.hpp>
 #include <functional>
 #include <memory>
 

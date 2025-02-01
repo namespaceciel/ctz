@@ -1,6 +1,6 @@
 #if defined(__aarch64__)
 
-#  include <ctz/osfiber_aarch64.h>
+#  include <ctz/osfiber_aarch64.hpp>
 #  include <stddef.h>
 
 void ctz_fiber_trampoline(void (*target)(void*), void* arg) {

@@ -1,5 +1,5 @@
 #include <cstdio>
-#include <ctz/event.h>
+#include <ctz/event.hpp>
 
 int main() {
     ctz::Scheduler::start(ctz::SchedulerConfig::allCores());

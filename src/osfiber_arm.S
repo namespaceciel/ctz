@@ -1,7 +1,7 @@
 #if defined(__arm__)
 
 #define CTZ_BUILD_ASM 1
-#include <ctz/osfiber_arm.h>
+#include <ctz/osfiber_arm.hpp>
 
 // void ctz_fiber_swap(ctz_fiber_context* from, const ctz_fiber_context* to)
 // x0: from

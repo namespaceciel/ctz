@@ -1,6 +1,6 @@
 #include <cmath>
 #include <cstdio>
-#include <ctz/ticket.h>
+#include <ctz/ticket.hpp>
 
 bool isPrime(int i) {
     auto c = static_cast<int>(std::sqrt(i));

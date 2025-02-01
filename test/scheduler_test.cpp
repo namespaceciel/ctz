@@ -3,7 +3,7 @@
 #include <atomic>
 #include <ciel/core/finally.hpp>
 #include <cstddef>
-#include <ctz/scheduler.h>
+#include <ctz/scheduler.hpp>
 #include <memory>
 
 TEST(SchedulerTest, SingleThreadCounter) {

@@ -2,7 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <ctz/fiber.h> // NOLINT(misc-include-cleaner)
+#include <ctz/fiber.hpp> // NOLINT(misc-include-cleaner)
 #include <iostream>
 #include <memory>
 #include <string>

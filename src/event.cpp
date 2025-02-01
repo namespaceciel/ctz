@@ -1,7 +1,7 @@
 #include <ciel/core/config.hpp>
 #include <ciel/shared_ptr.hpp>
-#include <ctz/config.h>
-#include <ctz/event.h>
+#include <ctz/config.hpp>
+#include <ctz/event.hpp>
 #include <mutex>
 
 NAMESPACE_CTZ_BEGIN

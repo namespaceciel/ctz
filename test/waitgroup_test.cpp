@@ -4,8 +4,8 @@
 #include <chrono>
 #include <ciel/core/finally.hpp>
 #include <cstddef>
-#include <ctz/scheduler.h>
-#include <ctz/waitgroup.h>
+#include <ctz/scheduler.hpp>
+#include <ctz/waitgroup.hpp>
 #include <thread>
 
 TEST(WaitGroupTest, WaitGroup_OneTask) {

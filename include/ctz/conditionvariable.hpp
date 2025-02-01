@@ -3,8 +3,8 @@
 
 #include <ciel/core/exchange.hpp>
 #include <ciel/vector.hpp>
-#include <ctz/config.h>
-#include <ctz/scheduler.h>
+#include <ctz/config.hpp>
+#include <ctz/scheduler.hpp>
 #include <memory>
 #include <mutex>
 

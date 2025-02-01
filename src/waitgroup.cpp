@@ -1,7 +1,7 @@
 #include <ciel/shared_ptr.hpp>
 #include <cstddef>
-#include <ctz/config.h>
-#include <ctz/waitgroup.h>
+#include <ctz/config.hpp>
+#include <ctz/waitgroup.hpp>
 #include <mutex>
 
 NAMESPACE_CTZ_BEGIN

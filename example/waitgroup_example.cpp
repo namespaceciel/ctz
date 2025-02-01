@@ -1,5 +1,5 @@
 #include <cstdio>
-#include <ctz/waitgroup.h>
+#include <ctz/waitgroup.hpp>
 
 int main() {
     ctz::Scheduler::start(ctz::SchedulerConfig::allCores());

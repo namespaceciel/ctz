@@ -1,10 +1,10 @@
 #include <ciel/core/config.hpp>
 #include <ciel/core/message.hpp>
 #include <cstddef>
-#include <ctz/config.h>
-#include <ctz/fiber.h>
-#include <ctz/scheduler.h>
-#include <ctz/worker.h>
+#include <ctz/config.hpp>
+#include <ctz/fiber.hpp>
+#include <ctz/scheduler.hpp>
+#include <ctz/worker.hpp>
 #include <functional>
 #include <memory>
 #include <mutex>

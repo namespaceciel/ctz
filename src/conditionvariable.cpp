@@ -1,5 +1,5 @@
-#include <ctz/conditionvariable.h>
-#include <ctz/config.h>
+#include <ctz/conditionvariable.hpp>
+#include <ctz/config.hpp>
 #include <memory>
 #include <mutex>
 #include <utility>

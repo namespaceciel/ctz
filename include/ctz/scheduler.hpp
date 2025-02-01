@@ -6,8 +6,8 @@
 #include <ciel/core/message.hpp>
 #include <ciel/vector.hpp>
 #include <cstddef>
-#include <ctz/config.h>
-#include <ctz/worker.h>
+#include <ctz/config.hpp>
+#include <ctz/worker.hpp>
 #include <memory>
 
 NAMESPACE_CTZ_BEGIN

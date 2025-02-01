@@ -1,6 +1,6 @@
 #if defined(__x86_64__)
 
-#  include <ctz/osfiber_x64.h>
+#  include <ctz/osfiber_x64.hpp>
 
 // You can find an explanation of this code here:
 // https://github.com/google/marl/issues/199

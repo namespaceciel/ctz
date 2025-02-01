@@ -4,8 +4,8 @@
 #include <atomic>
 #include <ciel/core/message.hpp>
 #include <ciel/vector.hpp>
-#include <ctz/config.h>
-#include <ctz/waitgroup.h>
+#include <ctz/config.hpp>
+#include <ctz/waitgroup.hpp>
 #include <functional>
 #include <memory>
 

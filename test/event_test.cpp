@@ -3,9 +3,9 @@
 #include <array>
 #include <atomic>
 #include <ciel/core/finally.hpp>
-#include <ctz/event.h>
-#include <ctz/scheduler.h>
-#include <ctz/waitgroup.h>
+#include <ctz/event.hpp>
+#include <ctz/scheduler.hpp>
+#include <ctz/waitgroup.hpp>
 #include <string>
 
 TEST(EventTest, EventIsSignalled) {

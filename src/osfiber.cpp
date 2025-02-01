@@ -2,8 +2,8 @@
 #include <ciel/core/message.hpp>
 #include <cstdint>
 #include <cstdlib>
-#include <ctz/config.h>
-#include <ctz/osfiber.h>
+#include <ctz/config.hpp>
+#include <ctz/osfiber.hpp>
 #include <functional>
 #include <memory>
 #include <new>

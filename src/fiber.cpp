@@ -1,9 +1,9 @@
 #include <ciel/core/config.hpp>
 #include <ciel/core/message.hpp>
 #include <cstddef>
-#include <ctz/config.h>
-#include <ctz/fiber.h>
-#include <ctz/osfiber.h>
+#include <ctz/config.hpp>
+#include <ctz/fiber.hpp>
+#include <ctz/osfiber.hpp>
 #include <functional>
 #include <memory>
 #include <utility>

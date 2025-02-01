@@ -2,8 +2,8 @@
 
 #include <atomic>
 #include <ciel/core/finally.hpp>
-#include <ctz/scheduler.h>
-#include <ctz/ticket.h>
+#include <ctz/scheduler.hpp>
+#include <ctz/ticket.hpp>
 
 TEST(TicketTest, all) {
     ctz::Scheduler::start(ctz::SchedulerConfig::allCores());
